@@ -3,5 +3,7 @@
 /music
 /venv
 
+__pycache__
+
 openboard.sublime-project
 openboard.sublime-workspace
