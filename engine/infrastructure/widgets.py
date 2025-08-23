@@ -3,17 +3,17 @@ from pathlib import Path
 from typing import List, Optional
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
+    QFrame,
     QHBoxLayout,
     QLabel,
     QPushButton,
-    QSlider,
     QScrollArea,
-    QFrame,
+    QSlider,
+    QVBoxLayout,
+    QWidget,
 )
-from PySide6.QtGui import QFont
 
 from engine.application.services import AudioService
 from engine.domain.sound import Sound, SoundFolder

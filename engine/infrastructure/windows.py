@@ -3,16 +3,16 @@ from typing import List
 from PySide6.QtCore import (
     Qt,
 )
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
-    QMainWindow,
-    QWidget,
-    QVBoxLayout,
     QHBoxLayout,
     QLabel,
+    QMainWindow,
     QPushButton,
     QSlider,
+    QVBoxLayout,
+    QWidget,
 )
-from PySide6.QtGui import QFont
 
 from engine.infrastructure.services import QtAudioService
 from engine.infrastructure.widgets import SoundSection

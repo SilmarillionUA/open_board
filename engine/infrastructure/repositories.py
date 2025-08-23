@@ -39,7 +39,9 @@ class QtSoundRepository(SoundRepository):
             )
         return player
 
-    def _on_status_changed(self, sound: Sound, status: QMediaPlayer.MediaStatus) -> None:
+    def _on_status_changed(
+        self, sound: Sound, status: QMediaPlayer.MediaStatus
+    ) -> None:
         if status == QMediaPlayer.EndOfMedia:
             if sound.should_loop():
                 player = self._players.get(sound)
@@ -64,7 +66,9 @@ class QtSoundRepository(SoundRepository):
         self._apply_volume(sound)
         player.play()
 
-    def pause(self, sound: Sound) -> None:  # pragma: no cover - Qt side effects
+    def pause(
+        self, sound: Sound
+    ) -> None:  # pragma: no cover - Qt side effects
         player = self._players.get(sound)
         if player:
             player.pause()

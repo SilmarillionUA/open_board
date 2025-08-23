@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+
 from PySide6.QtCore import QObject, Signal
 
 from engine.domain.sound import Sound
-
 
 # Create a metaclass that combines Qt's ``QObject`` metaclass with ``ABCMeta``.
 #

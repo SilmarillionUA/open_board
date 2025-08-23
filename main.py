@@ -53,7 +53,12 @@ def main() -> int:
     app.setStyle('Fusion')
 
     # Load global stylesheet
-    style_path = Path(__file__).resolve().parent / "engine" / "infrastructure" / "style.qss"
+    style_path = (
+        Path(__file__).resolve().parent
+        / "engine"
+        / "infrastructure"
+        / "style.qss"
+    )
     if style_path.exists():
         with open(style_path, "r", encoding="utf-8") as f:
             app.setStyleSheet(f.read())

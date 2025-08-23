@@ -1,7 +1,7 @@
+import random
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
-import random
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".m4a", ".flac", ".aac"}
 
