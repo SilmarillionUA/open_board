@@ -104,11 +104,11 @@ class SoundPlayer(QWidget):
         return random.choice(self.folder_sounds)
 
     @Property(float)
-    def fadeVolume(self):
+    def fadeVolume(self) -> float:
         return self._current_fade_volume
 
     @fadeVolume.setter
-    def fadeVolume(self, value):
+    def fadeVolume(self, value: float) -> None:
         self._current_fade_volume = value
         self._update_volume()
 
@@ -318,7 +318,9 @@ class SoundPlayer(QWidget):
             )
             main_layout.addWidget(info_label)
 
-    def _on_playback_state_changed(self, state) -> None:
+    def _on_playback_state_changed(
+        self, state: QMediaPlayer.PlaybackState
+    ) -> None:
         """Handle playback state changes to show/hide buttons."""
         if state == QMediaPlayer.PlayingState:
             self.play_button.hide()
@@ -327,7 +329,7 @@ class SoundPlayer(QWidget):
             self.pause_button.hide()
             self.play_button.show()
 
-    def play(self):
+    def play(self) -> None:
         """Start playing the sound with fade in for looping sounds only."""
         if self.is_folder:
             # For folders, select a random sound each time
@@ -375,7 +377,7 @@ class SoundPlayer(QWidget):
         self.fade_animation.setEndValue(0.0)
         self.fade_animation.start()
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop playing the sound with fade out for looping sounds only."""
         if self.media_player.playbackState() != QMediaPlayer.StoppedState:
             if self.loop_mode:  # Only fade for ambient/music
@@ -397,7 +399,7 @@ class SoundPlayer(QWidget):
         self.volume_label.setText(f"{value}%")
         self._update_volume()
 
-    def _update_volume(self):
+    def _update_volume(self) -> None:
         """Update the actual audio volume based on slider, master, and fade volume."""
         slider_volume = self.volume_slider.value() / 100.0
         final_volume = (
@@ -405,12 +407,14 @@ class SoundPlayer(QWidget):
         )
         self.audio_output.setVolume(final_volume)
 
-    def set_master_volume(self, volume: float):
+    def set_master_volume(self, volume: float) -> None:
         """Set master volume (0.0 to 1.0)."""
         self.master_volume = volume
         self._update_volume()
 
-    def _on_media_status_changed(self, status):
+    def _on_media_status_changed(
+        self, status: QMediaPlayer.MediaStatus
+    ) -> None:
         """Handle media status changes for looping."""
         if (
             status == QMediaPlayer.EndOfMedia
@@ -429,7 +433,7 @@ class SoundPlayer(QWidget):
             # User can click play again to get another random sound
             pass
 
-    def _complete_stop(self):
+    def _complete_stop(self) -> None:
         """Complete the stop action after fade."""
         self.media_player.stop()
         self._current_fade_volume = 1.0  # Reset for next play
@@ -444,7 +448,7 @@ class SoundSection(QWidget):
         folder_path: str,
         loop_mode: bool = False,
         parent=None,
-    ):
+    ) -> None:
         super().__init__(parent)
         self.title = title
         self.folder_path = folder_path
@@ -454,7 +458,7 @@ class SoundSection(QWidget):
         self._setup_ui()
         self._load_sounds()
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:
         """Set up the section UI."""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -526,14 +530,14 @@ class SoundSection(QWidget):
         scroll_area.setWidget(self.players_widget)
         layout.addWidget(scroll_area)
 
-    def _darken_color(self, hex_color):
+    def _darken_color(self, hex_color: str) -> str:
         """Darken a hex color by 20%."""
         hex_color = hex_color.lstrip('#')
         rgb = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
         darkened = tuple(int(c * 0.8) for c in rgb)
         return f"#{darkened[0]:02x}{darkened[1]:02x}{darkened[2]:02x}"
 
-    def _load_sounds(self):
+    def _load_sounds(self) -> None:
         """Load sound files and folders from the folder in alphabetical order."""
         if not os.path.exists(self.folder_path):
             # Show message if folder doesn't exist
@@ -639,12 +643,12 @@ class SoundSection(QWidget):
         # Add stretch to push players to the top
         self.players_layout.addStretch()
 
-    def set_master_volume(self, volume: float):
+    def set_master_volume(self, volume: float) -> None:
         """Set master volume for all players in this section."""
         for player in self.players:
             player.set_master_volume(volume)
 
-    def stop_all(self):
+    def stop_all(self) -> None:
         """Stop all players in this section."""
         for player in self.players:
             player.stop()

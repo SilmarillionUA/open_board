@@ -35,12 +35,12 @@ from engine.infrastructure.widgets import SoundSection
 class MusicBoardMainWindow(QMainWindow):
     """Main window for the music board application."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.sections: List[SoundSection] = []
         self._setup_ui()
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:
         """Set up the main window UI."""
         self.setWindowTitle("🎛️ OpenBoard - Professional Audio Mixer")
         self.setGeometry(100, 100, 1400, 900)
@@ -94,7 +94,7 @@ class MusicBoardMainWindow(QMainWindow):
 
         main_layout.addLayout(sections_layout)
 
-    def _create_header(self, main_layout):
+    def _create_header(self, main_layout: QVBoxLayout) -> None:
         """Create the header with master controls."""
         header_widget = QWidget()
         header_widget.setFixedHeight(80)
@@ -221,7 +221,7 @@ class MusicBoardMainWindow(QMainWindow):
 
         main_layout.addWidget(header_widget)
 
-    def _on_master_volume_changed(self, value: int):
+    def _on_master_volume_changed(self, value: int) -> None:
         """Handle master volume slider changes."""
         volume_percent = value / 100.0
         self.master_volume_label.setText(f"{value}%")
@@ -230,7 +230,7 @@ class MusicBoardMainWindow(QMainWindow):
         for section in self.sections:
             section.set_master_volume(volume_percent)
 
-    def _stop_all_sounds(self):
+    def _stop_all_sounds(self) -> None:
         """Stop all sounds in all sections."""
         for section in self.sections:
             section.stop_all()
