@@ -9,6 +9,8 @@
 
 Open Board is an open-source PySide6 audio mixer and soundboard tailored for tabletop role-playing games (TTRPGs) such as Dungeons & Dragons, Pathfinder, Warhammer, and more. It lets Game Masters trigger ambient, music, and sound effects from a simple board interface to enhance every session.
 
+![Open Board](./screenshot.png?raw=true)
+
 ## Getting Started
 
 1. Create and activate a virtual environment:
