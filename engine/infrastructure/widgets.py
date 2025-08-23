@@ -416,11 +416,7 @@ class SoundPlayer(QWidget):
         self, status: QMediaPlayer.MediaStatus
     ) -> None:
         """Handle media status changes for looping."""
-        if (
-            status == QMediaPlayer.EndOfMedia
-            and self.loop_mode
-            and self.media_player.playbackState() != QMediaPlayer.StoppedState
-        ):
+        if status == QMediaPlayer.EndOfMedia and self.loop_mode:
             # Restart the media for looping
             self.media_player.setPosition(0)
             self.media_player.play()
