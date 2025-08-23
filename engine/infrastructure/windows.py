@@ -1,8 +1,6 @@
 from typing import List
 
-from PySide6.QtCore import (
-    Qt,
-)
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -14,14 +12,20 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QFont
 
+from engine.application.services import AudioService
+from engine.application.repositories import SoundRepository
 from engine.infrastructure.widgets import SoundSection
 
 
 class MusicBoardMainWindow(QMainWindow):
     """Main window for the music board application."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self, audio_service: AudioService, repository: SoundRepository
+    ) -> None:
         super().__init__()
+        self.audio_service = audio_service
+        self.repository = repository
         self.sections: List[SoundSection] = []
         self._setup_ui()
 
@@ -56,10 +60,26 @@ class MusicBoardMainWindow(QMainWindow):
         sections_layout.setSpacing(20)
 
         # Create the three sections
-        ambient_section = SoundSection("🌿 AMBIENT", "ambient", loop_mode=True)
-        music_section = SoundSection("🎵 MUSIC", "music", loop_mode=True)
+        ambient_section = SoundSection(
+            "🌿 AMBIENT",
+            "ambient",
+            loop_mode=True,
+            audio_service=self.audio_service,
+            repository=self.repository,
+        )
+        music_section = SoundSection(
+            "🎵 MUSIC",
+            "music",
+            loop_mode=True,
+            audio_service=self.audio_service,
+            repository=self.repository,
+        )
         effects_section = SoundSection(
-            "⚡ EFFECTS", "effects", loop_mode=False
+            "⚡ EFFECTS",
+            "effects",
+            loop_mode=False,
+            audio_service=self.audio_service,
+            repository=self.repository,
         )
 
         self.sections = [ambient_section, music_section, effects_section]
@@ -210,12 +230,8 @@ class MusicBoardMainWindow(QMainWindow):
         """Handle master volume slider changes."""
         volume_percent = value / 100.0
         self.master_volume_label.setText(f"{value}%")
-
-        # Update all sections
-        for section in self.sections:
-            section.set_master_volume(volume_percent)
+        self.audio_service.set_master_volume(volume_percent)
 
     def _stop_all_sounds(self) -> None:
         """Stop all sounds in all sections."""
-        for section in self.sections:
-            section.stop_all()
+        self.audio_service.stop_all()

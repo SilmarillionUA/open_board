@@ -28,9 +28,10 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QFrame,
 )
-from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtGui import QFont
 
+from engine.infrastructure.audio_service import QtAudioService
+from engine.infrastructure.repository import FileSystemSoundRepository
 from engine.infrastructure.windows import MusicBoardMainWindow
 
 
@@ -80,7 +81,11 @@ def main() -> int:
 
     create_sample_folders()
 
-    window = MusicBoardMainWindow()
+    audio_service = QtAudioService()
+    repository = FileSystemSoundRepository()
+    window = MusicBoardMainWindow(
+        audio_service=audio_service, repository=repository
+    )
     window.show()
 
     # Start the application
