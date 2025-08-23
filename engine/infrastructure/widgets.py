@@ -51,19 +51,6 @@ class SoundPlayer(QWidget):
         """Set up the player UI."""
         self.setMinimumHeight(80)
         self.setMaximumHeight(80)
-        self.setStyleSheet(
-            """
-            SoundPlayer {
-                background-color: white;
-                border: 1px solid #e0e0e0;
-                border-radius: 8px;  
-                margin: 4px;  
-            }
-            SoundPlayer:hover {
-                border-color: #2196F3;
-            }
-        """
-        )
 
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(12, 8, 12, 8)
@@ -80,17 +67,7 @@ class SoundPlayer(QWidget):
 
         self.name_label = QLabel(name_text)
         self.name_label.setWordWrap(True)
-        self.name_label.setStyleSheet(
-            """
-            QLabel {
-                font-weight: bold;
-                font-size: 12px;  
-                color: #333;
-                padding: 2px 6px;
-                background-color: transparent;
-            }
-        """
-        )
+        self.name_label.setObjectName("playerNameLabel")
         top_layout.addWidget(self.name_label, 1)
 
         main_layout.addLayout(top_layout)
@@ -104,90 +81,25 @@ class SoundPlayer(QWidget):
         self.play_button = QPushButton("▶")
         self.play_button.setFixedSize(28, 24)
         self.play_button.clicked.connect(self.play)
-        self.play_button.setStyleSheet(
-            """
-            QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #4CAF50, stop:1 #45a049);
-                color: white;
-                border: none;
-                border-radius: 12px;  
-                font-weight: bold;
-                font-size: 10px; 
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #45a049, stop:1 #3d8b40);
-            }
-            QPushButton:pressed {
-                background: #3d8b40;
-            }
-        """
-        )
+        self.play_button.setObjectName("playButton")
         bottom_layout.addWidget(self.play_button)
 
         self.pause_button = QPushButton("⏸")
         self.pause_button.setFixedSize(28, 24)
         self.pause_button.clicked.connect(self._pause)
-        self.pause_button.setStyleSheet(
-            """
-            QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #FF9800, stop:1 #F57C00);
-                color: white;
-                border: none;
-                border-radius: 12px;
-                font-weight: bold;
-                font-size: 10px;
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #F57C00, stop:1 #E65100);
-            }
-            QPushButton:pressed {
-                background: #E65100;
-            }
-        """
-        )
+        self.pause_button.setObjectName("pauseButton")
         self.pause_button.hide()
         bottom_layout.addWidget(self.pause_button)
 
         self.stop_button = QPushButton("⏹")
         self.stop_button.setFixedSize(28, 24)
         self.stop_button.clicked.connect(self.stop)
-        self.stop_button.setStyleSheet(
-            """
-            QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #f44336, stop:1 #da190b);
-                color: white;
-                border: none;
-                border-radius: 12px;
-                font-weight: bold;
-                font-size: 10px;
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #da190b, stop:1 #c1170a);
-            }
-            QPushButton:pressed {
-                background: #c1170a;
-            }
-        """
-        )
+        self.stop_button.setObjectName("stopButton")
         bottom_layout.addWidget(self.stop_button)
 
         # Volume controls (inline)
         vol_label = QLabel("Vol:")
-        vol_label.setStyleSheet(
-            """
-            QLabel {
-                color: #666;
-                font-size: 10px;   
-                font-weight: bold;
-            }
-        """
-        )
+        vol_label.setObjectName("volumeTextLabel")
         bottom_layout.addWidget(vol_label)
 
         self.volume_slider = QSlider(Qt.Horizontal)
@@ -195,45 +107,12 @@ class SoundPlayer(QWidget):
         self.volume_slider.setValue(70)
         self.volume_slider.setFixedHeight(16)
         self.volume_slider.valueChanged.connect(self._on_volume_changed)
-        self.volume_slider.setStyleSheet(
-            """
-            QSlider::groove:horizontal {
-                border: 1px solid #ddd;
-                height: 4px;  
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #f5f5f5, stop:1 #e0e0e0);
-                margin: 2px 0;
-                border-radius: 2px;
-            }
-            QSlider::handle:horizontal {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #2196F3, stop:1 #1976D2);
-                border: 1px solid white;
-                width: 12px;  
-                height: 12px;
-                margin: -4px 0;
-                border-radius: 6px;
-            }
-            QSlider::handle:horizontal:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #1976D2, stop:1 #1565C0);
-            }
-        """
-        )
+        self.volume_slider.setObjectName("volumeSlider")
         bottom_layout.addWidget(self.volume_slider, 1)
 
         self.volume_label = QLabel("70%")
         self.volume_label.setFixedWidth(30)
-        self.volume_label.setStyleSheet(
-            """
-            QLabel {
-                color: #666;
-                font-size: 10px;
-                font-weight: bold;
-                text-align: right;
-            }
-        """
-        )
+        self.volume_label.setObjectName("volumeValueLabel")
         bottom_layout.addWidget(self.volume_label)
 
         main_layout.addLayout(bottom_layout)
@@ -241,16 +120,7 @@ class SoundPlayer(QWidget):
         # Add folder info if this is a folder
         if self.is_folder:
             info_label = QLabel(f"({len(self.sound_folder.sounds)} sounds)")
-            info_label.setStyleSheet(
-                """
-                QLabel {
-                    color: #888;
-                    font-size: 9px;
-                    font-style: italic;
-                    padding: 0px 6px;
-                }
-            """
-            )
+            info_label.setObjectName("folderInfoLabel")
             main_layout.addWidget(info_label)
 
     def play(self) -> None:
@@ -346,32 +216,10 @@ class SoundSection(QWidget):
         scroll_area.setWidgetResizable(True)
         scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scroll_area.setStyleSheet(
-            """
-            QScrollArea {
-                border: none;
-                background-color: #fafafa;
-                border-radius: 0 0 12px 12px;
-            }
-            QScrollBar:vertical {
-                background-color: #f0f0f0;
-                width: 12px;
-                border-radius: 6px;
-                margin: 0;
-            }
-            QScrollBar::handle:vertical {
-                background-color: #c0c0c0;
-                border-radius: 6px;
-                min-height: 20px;
-            }
-            QScrollBar::handle:vertical:hover {
-                background-color: #a0a0a0;
-            }
-        """
-        )
+        scroll_area.setObjectName("sectionScrollArea")
 
         self.players_widget = QWidget()
-        self.players_widget.setStyleSheet("background-color: #fafafa;")
+        self.players_widget.setObjectName("playersWidget")
         self.players_layout = QVBoxLayout(self.players_widget)
         self.players_layout.setContentsMargins(8, 8, 8, 8)
         self.players_layout.setSpacing(6)
@@ -394,17 +242,7 @@ class SoundSection(QWidget):
                 f"📁 Folder '{self.folder_path}' not found"
             )
             no_folder_label.setAlignment(Qt.AlignCenter)
-            no_folder_label.setStyleSheet(
-                """
-                QLabel {
-                    color: #999;
-                    font-style: italic;
-                    font-size: 14px;
-                    padding: 40px 20px;
-                    background-color: transparent;
-                }
-            """
-            )
+            no_folder_label.setObjectName("noFolderLabel")
             self.players_layout.addWidget(no_folder_label)
             return
 
@@ -447,18 +285,7 @@ class SoundSection(QWidget):
 
             no_files_label = QLabel(message)
             no_files_label.setAlignment(Qt.AlignCenter)
-            no_files_label.setStyleSheet(
-                """
-                QLabel {
-                    color: #999;
-                    font-style: italic;
-                    font-size: 14px;
-                    padding: 40px 20px;
-                    background-color: transparent;
-                    line-height: 1.5;
-                }
-            """
-            )
+            no_files_label.setObjectName("noFilesLabel")
             self.players_layout.addWidget(no_files_label)
             return
 
@@ -477,16 +304,7 @@ class SoundSection(QWidget):
                 divider.setFrameShape(QFrame.HLine)
                 divider.setFrameShadow(QFrame.Sunken)
                 divider.setFixedHeight(1)
-                divider.setStyleSheet(
-                    """
-                    QFrame {
-                        color: #e0e0e0;
-                        background-color: #e0e0e0;
-                        border: none;
-                        margin: 2px 8px;
-                    }
-                """
-                )
+                divider.setObjectName("dividerFrame")
                 self.players_layout.addWidget(divider)
 
         # Add stretch to push players to the top

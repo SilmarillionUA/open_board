@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 
 from PySide6.QtWidgets import (
     QApplication,
@@ -50,6 +51,12 @@ def main() -> int:
     app.setApplicationName("OpenBoard Audio Mixer")
 
     app.setStyle('Fusion')
+
+    # Load global stylesheet
+    style_path = Path(__file__).resolve().parent / "engine" / "infrastructure" / "style.qss"
+    if style_path.exists():
+        with open(style_path, "r", encoding="utf-8") as f:
+            app.setStyleSheet(f.read())
 
     create_sample_folders()
 
