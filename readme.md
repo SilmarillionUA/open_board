@@ -1,6 +1,6 @@
 # Open Board
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue) ![PySide6](https://img.shields.io/badge/PySide6-6.x-green)
+![Python](https://img.shields.io/badge/Python-3.13%2B-blue) ![PySide6](https://img.shields.io/badge/PySide6-6.x-green)
 
 Open Board is an open-source PySide6 audio mixer and soundboard tailored for tabletop role-playing games (TTRPGs) such as Dungeons & Dragons, Pathfinder, Warhammer, and more. It lets Game Masters trigger ambient, music, and sound effects from a simple board interface to enhance every session.
 

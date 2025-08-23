@@ -29,7 +29,7 @@ class MusicBoardMainWindow(QMainWindow):
 
     def _setup_ui(self) -> None:
         """Set up the main window UI."""
-        self.setWindowTitle("🎛️ OpenBoard - Professional Audio Mixer")
+        self.setWindowTitle("🎛️ OpenBoard - TTRPG Audio Mixer")
         self.setGeometry(100, 100, 1400, 900)
 
         # Modern styling
