@@ -1,20 +1,9 @@
-import os
-import sys
-import random
-from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List
 
 from PySide6.QtCore import (
     Qt,
-    QUrl,
-    Signal,
-    QTimer,
-    QPropertyAnimation,
-    QEasingCurve,
-    Property,
 )
 from PySide6.QtWidgets import (
-    QApplication,
     QMainWindow,
     QWidget,
     QVBoxLayout,
@@ -22,11 +11,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QSlider,
-    QScrollArea,
-    QGroupBox,
-    QFrame,
 )
-from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtGui import QFont
 
 from engine.infrastructure.widgets import SoundSection

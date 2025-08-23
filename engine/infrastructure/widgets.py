@@ -35,7 +35,7 @@ class SoundPlayer(QWidget):
         file_path: str,
         loop_mode: bool = False,
         is_folder: bool = False,
-        parent=None,
+        parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
         self.file_path = file_path
@@ -107,7 +107,7 @@ class SoundPlayer(QWidget):
     def fadeVolume(self) -> float:
         return self._current_fade_volume
 
-    @fadeVolume.setter
+    @fadeVolume.setter  # type: ignore[no-redef]
     def fadeVolume(self, value: float) -> None:
         self._current_fade_volume = value
         self._update_volume()
