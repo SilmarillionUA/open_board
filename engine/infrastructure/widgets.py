@@ -2,14 +2,7 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-from PySide6.QtCore import (
-    Qt,
-    QUrl,
-    Signal,
-    QPropertyAnimation,
-    QEasingCurve,
-    Property,
-)
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -20,74 +13,39 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QFrame,
 )
-from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtGui import QFont
 
-from engine.domain.sound import Sound, SoundFolder, VolumeLevel
+from engine.application.services import AudioService
+from engine.domain.sound import Sound, SoundFolder
 
 
 class SoundPlayer(QWidget):
     """Individual sound player widget with play/stop and volume controls."""
-
-    volume_changed = Signal(float)  # Signal for master volume changes
 
     def __init__(
         self,
         file_path: str,
         loop_mode: bool = False,
         is_folder: bool = False,
+        service: Optional[AudioService] = None,
         parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
         self.file_path = file_path
         self.loop_mode = loop_mode
         self.is_folder = is_folder
-        self.master_volume = VolumeLevel(1.0)
-        self._current_fade_volume = 1.0  # For fade animations
+        self._service = service
 
         if self.is_folder:
-            # For folders, store the folder path and load available sounds
             self.sound_folder = SoundFolder(Path(file_path))
             self.sound_folder.scan()
             self.filename = Path(file_path).name
-            self.current_sound_path = None
+            self.sound: Optional[Sound] = None
         else:
-            # For regular files
-            self.filename = Path(file_path).stem
             self.sound = Sound(Path(file_path), loop_mode)
-
-        # Audio components
-        self.media_player = QMediaPlayer()
-        self.audio_output = QAudioOutput()
-        self.media_player.setAudioOutput(self.audio_output)
-
-        # Set initial source if not a folder
-        if not self.is_folder:
-            self.media_player.setSource(QUrl.fromLocalFile(file_path))
-
-        self.media_player.mediaStatusChanged.connect(
-            self._on_media_status_changed
-        )
-        self.media_player.playbackStateChanged.connect(
-            self._on_playback_state_changed
-        )
-
-        # Volume fade animation
-        self.fade_animation = QPropertyAnimation(self, b"fadeVolume")
-        self.fade_animation.setDuration(3000)  # 3 seconds
-        self.fade_animation.setEasingCurve(QEasingCurve.InOutQuad)
+            self.filename = self.sound.path.stem
 
         self._setup_ui()
-        self._update_volume()
-
-    @Property(float)
-    def fadeVolume(self) -> float:
-        return self._current_fade_volume
-
-    @fadeVolume.setter  # type: ignore[no-redef]
-    def fadeVolume(self, value: float) -> None:
-        self._current_fade_volume = value
-        self._update_volume()
 
     def _setup_ui(self) -> None:
         """Set up the player UI."""
@@ -295,123 +253,37 @@ class SoundPlayer(QWidget):
             )
             main_layout.addWidget(info_label)
 
-    def _on_playback_state_changed(
-        self, state: QMediaPlayer.PlaybackState
-    ) -> None:
-        """Handle playback state changes to show/hide buttons."""
-        if state == QMediaPlayer.PlayingState:
-            self.play_button.hide()
-            self.pause_button.show()
-        else:
-            self.pause_button.hide()
-            self.play_button.show()
-
     def play(self) -> None:
-        """Start playing the sound with fade in for looping sounds only."""
+        """Start playing the sound via the audio service."""
         if self.is_folder:
-            # For folders, select a random sound each time
             random_sound = self.sound_folder.random_sound()
-            if random_sound:
-                self.current_sound_path = str(random_sound.path)
-                self.media_player.setSource(
-                    QUrl.fromLocalFile(str(random_sound.path))
-                )
-                print(
-                    f"Playing random sound from folder '{self.filename}': "
-                    f"{random_sound.path.stem}"
-                )
-            else:
-                print(f"No sounds found in folder '{self.filename}'")
+            if random_sound is None:
                 return
-
-        self.media_player.play()
-        if (
-            self.loop_mode
-        ):  # Only fade for ambient/music (folders are always effects, so no fade)
-            try:
-                self.fade_animation.finished.disconnect()
-            except:
-                pass
-            self.fade_animation.setStartValue(0.0)
-            self.fade_animation.setEndValue(1.0)
-            self.fade_animation.start()
-        else:  # Effects (including folders) play immediately at full volume
-            self._current_fade_volume = 1.0
-            self._update_volume()
+            self.sound = Sound(random_sound.path, self.loop_mode)
+        if self.sound and self._service:
+            self._service.play_sound(self.sound)
+            self._service.set_sound_volume(
+                self.sound, self.volume_slider.value() / 100.0
+            )
+        self.play_button.hide()
+        self.pause_button.show()
 
     def _pause(self) -> None:
-        """Pause playing the sound with fade out for looping sounds only."""
-        if not self.loop_mode:  # Only fade for ambient/music
-            self.media_player.pause()
-            return 
-
-        try:
-            self.fade_animation.finished.disconnect()
-        except:
-            pass
-        self.fade_animation.finished.connect(
-            lambda: self.media_player.pause()
-        )
-        self.fade_animation.setStartValue(self._current_fade_volume)
-        self.fade_animation.setEndValue(0.0)
-        self.fade_animation.start()
+        """Pause playback through the service."""
+        if self.sound and self._service:
+            self._service.pause_sound(self.sound)
+        self.pause_button.hide()
+        self.play_button.show()
 
     def stop(self) -> None:
-        """Stop playing the sound with fade out for looping sounds only."""
-        if self.media_player.playbackState() != QMediaPlayer.StoppedState:
-            if self.loop_mode:  # Only fade for ambient/music
-                try:
-                    self.fade_animation.finished.disconnect()
-                except:
-                    pass
-                self.fade_animation.finished.connect(self._complete_stop)
-                self.fade_animation.setStartValue(self._current_fade_volume)
-                self.fade_animation.setEndValue(0.0)
-                self.fade_animation.start()
-            else:  # Effects (including folders) stop immediately
-                self._complete_stop()
-        else:
-            self._complete_stop()
+        """Stop playback (alias for pause)."""
+        self._pause()
 
     def _on_volume_changed(self, value: int) -> None:
         """Handle volume slider changes."""
         self.volume_label.setText(f"{value}%")
-        self._update_volume()
-
-    def _update_volume(self) -> None:
-        """Update the actual audio volume based on slider, master, and fade volume."""
-        slider_volume = self.volume_slider.value() / 100.0
-        final_volume = (
-            slider_volume * self.master_volume.value * self._current_fade_volume
-        )
-        self.audio_output.setVolume(final_volume)
-
-    def set_master_volume(self, volume: float) -> None:
-        """Set master volume (0.0 to 1.0)."""
-        self.master_volume = VolumeLevel(volume)
-        self._update_volume()
-
-    def _on_media_status_changed(
-        self, status: QMediaPlayer.MediaStatus
-    ) -> None:
-        """Handle media status changes for looping."""
-        if status == QMediaPlayer.EndOfMedia and self.loop_mode:
-            # Restart the media for looping
-            self.media_player.setPosition(0)
-            self.media_player.play()
-        elif (
-            status == QMediaPlayer.EndOfMedia
-            and self.is_folder
-            and not self.loop_mode
-        ):
-            # For folders, when a sound ends, we just stop (no auto-repeat)
-            # User can click play again to get another random sound
-            pass
-
-    def _complete_stop(self) -> None:
-        """Complete the stop action after fade."""
-        self.media_player.stop()
-        self._current_fade_volume = 1.0  # Reset for next play
+        if self.sound and self._service:
+            self._service.set_sound_volume(self.sound, value / 100.0)
 
 
 class SoundSection(QWidget):
@@ -421,6 +293,7 @@ class SoundSection(QWidget):
         self,
         title: str,
         folder_path: str,
+        service: AudioService,
         loop_mode: bool = False,
         parent=None,
     ) -> None:
@@ -428,6 +301,7 @@ class SoundSection(QWidget):
         self.title = title
         self.folder_path = folder_path
         self.loop_mode = loop_mode
+        self._service = service
         self.players: List[SoundPlayer] = []
 
         self._setup_ui()
@@ -592,7 +466,7 @@ class SoundSection(QWidget):
         for i, item_path in enumerate(all_items):
             is_folder = os.path.isdir(item_path)
             player = SoundPlayer(
-                item_path, self.loop_mode, is_folder=is_folder
+                item_path, self.loop_mode, is_folder=is_folder, service=self._service
             )
             self.players.append(player)
             self.players_layout.addWidget(player)
@@ -617,11 +491,6 @@ class SoundSection(QWidget):
 
         # Add stretch to push players to the top
         self.players_layout.addStretch()
-
-    def set_master_volume(self, volume: float) -> None:
-        """Set master volume for all players in this section."""
-        for player in self.players:
-            player.set_master_volume(volume)
 
     def stop_all(self) -> None:
         """Stop all players in this section."""

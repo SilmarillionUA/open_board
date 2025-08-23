@@ -27,3 +27,7 @@ class SoundRepository(QObject, ABC):
     @abstractmethod
     def set_master_volume(self, volume: float) -> None:
         """Set the global master volume (0.0 to 1.0)."""
+
+    @abstractmethod
+    def set_volume(self, sound: Sound, volume: float) -> None:
+        """Set volume for a specific sound (0.0 to 1.0)."""

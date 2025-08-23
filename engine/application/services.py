@@ -32,3 +32,7 @@ class AudioService(QObject):
         """Adjust master output volume."""
         self._repo.set_master_volume(volume)
         self.master_volume_changed.emit(volume)
+
+    def set_sound_volume(self, sound: Sound, volume: float) -> None:
+        """Adjust volume for an individual sound."""
+        self._repo.set_volume(sound, volume)

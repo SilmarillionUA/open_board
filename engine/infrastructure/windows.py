@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QFont
 
+from engine.infrastructure.services import QtAudioService
 from engine.infrastructure.widgets import SoundSection
 
 
@@ -23,6 +24,7 @@ class MusicBoardMainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.sections: List[SoundSection] = []
+        self.audio_service = QtAudioService()
         self._setup_ui()
 
     def _setup_ui(self) -> None:
@@ -56,10 +58,14 @@ class MusicBoardMainWindow(QMainWindow):
         sections_layout.setSpacing(20)
 
         # Create the three sections
-        ambient_section = SoundSection("🌿 AMBIENT", "ambient", loop_mode=True)
-        music_section = SoundSection("🎵 MUSIC", "music", loop_mode=True)
+        ambient_section = SoundSection(
+            "🌿 AMBIENT", "ambient", self.audio_service, loop_mode=True
+        )
+        music_section = SoundSection(
+            "🎵 MUSIC", "music", self.audio_service, loop_mode=True
+        )
         effects_section = SoundSection(
-            "⚡ EFFECTS", "effects", loop_mode=False
+            "⚡ EFFECTS", "effects", self.audio_service, loop_mode=False
         )
 
         self.sections = [ambient_section, music_section, effects_section]
@@ -210,10 +216,7 @@ class MusicBoardMainWindow(QMainWindow):
         """Handle master volume slider changes."""
         volume_percent = value / 100.0
         self.master_volume_label.setText(f"{value}%")
-
-        # Update all sections
-        for section in self.sections:
-            section.set_master_volume(volume_percent)
+        self.audio_service.set_master_volume(volume_percent)
 
     def _stop_all_sounds(self) -> None:
         """Stop all sounds in all sections."""
