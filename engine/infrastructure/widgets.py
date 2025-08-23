@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QTimer
 from PySide6.QtGui import QFont, QIcon, QColor, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QFrame,
@@ -59,6 +59,44 @@ class SoundPlayer(QWidget):
             self.filename = self.sound.path.stem
 
         self._setup_ui()
+
+        if self._service:
+            self._service.playback_finished.connect(self._on_playback_finished)
+        self._fade_timer: Optional[QTimer] = None
+
+    def _start_playback(self) -> None:
+        """Trigger playback via the audio service."""
+        if self.sound and self._service:
+            self._stop_fade()
+            self._service.play_sound(self.sound)
+            if self.loop_mode:
+                self._service.set_sound_volume(self.sound, 0.0)
+                self._fade_target = self.volume_slider.value() / 100.0
+                self._fade_elapsed = 0
+                self._fade_timer = QTimer(self)
+                self._fade_timer.timeout.connect(self._fade_step)
+                self._fade_timer.start(100)
+            else:
+                self._service.set_sound_volume(
+                    self.sound, self.volume_slider.value() / 100.0
+                )
+
+    def _fade_step(self) -> None:
+        if not (self.sound and self._service and self._fade_timer):
+            return
+        self._fade_elapsed += 100
+        ratio = min(self._fade_elapsed / 3000, 1.0)
+        self._service.set_sound_volume(
+            self.sound, self._fade_target * ratio
+        )
+        if ratio >= 1.0:
+            self._stop_fade()
+
+    def _stop_fade(self) -> None:
+        if self._fade_timer:
+            self._fade_timer.stop()
+            self._fade_timer.deleteLater()
+            self._fade_timer = None
 
     def _setup_ui(self) -> None:
         """Set up the player UI."""
@@ -158,10 +196,7 @@ class SoundPlayer(QWidget):
                 return
             self.sound = Sound(random_sound.path, self.loop_mode)
         if self.sound and self._service:
-            self._service.play_sound(self.sound)
-            self._service.set_sound_volume(
-                self.sound, self.volume_slider.value() / 100.0
-            )
+            self._start_playback()
         self.play_button.hide()
         self.pause_button.show()
 
@@ -170,6 +205,7 @@ class SoundPlayer(QWidget):
 
         if self.sound and self._service:
             self._service.pause_sound(self.sound)
+        self._stop_fade()
         self.pause_button.hide()
         self.play_button.show()
 
@@ -180,10 +216,17 @@ class SoundPlayer(QWidget):
 
     def _on_volume_changed(self, value: int) -> None:
         """Handle volume slider changes."""
-        
+
         self.volume_label.setText(f"{value}%")
         if self.sound and self._service:
             self._service.set_sound_volume(self.sound, value / 100.0)
+
+    def _on_playback_finished(self, sound: Sound) -> None:
+        """Reset controls when the current sound finishes playing."""
+        if self.sound == sound:
+            self._stop_fade()
+            self.pause_button.hide()
+            self.play_button.show()
 
 
 class SoundSection(QWidget):
