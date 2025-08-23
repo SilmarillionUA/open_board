@@ -32,16 +32,6 @@ class MusicBoardMainWindow(QMainWindow):
         self.setWindowTitle("🎛️ OpenBoard - TTRPG Audio Mixer")
         self.setGeometry(100, 100, 1400, 900)
 
-        # Modern styling
-        self.setStyleSheet(
-            """
-            QMainWindow {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #f8f9fa, stop:1 #e9ecef);
-            }
-        """
-        )
-
         # Central widget
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -72,15 +62,6 @@ class MusicBoardMainWindow(QMainWindow):
 
         # Add sections to layout with equal spacing
         for section in self.sections:
-            section.setStyleSheet(
-                """
-                SoundSection {
-                    background-color: white;
-                    border: 2px solid #e0e0e0;
-                    border-radius: 12px;
-                }
-            """
-            )
             sections_layout.addWidget(section, 1)  # Equal stretch factor
 
         main_layout.addLayout(sections_layout)
@@ -89,28 +70,14 @@ class MusicBoardMainWindow(QMainWindow):
         """Create the header with master controls."""
         header_widget = QWidget()
         header_widget.setFixedHeight(80)
-        header_widget.setStyleSheet(
-            """
-            QWidget {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #2c3e50, stop:1 #34495e);
-                border-radius: 16px;
-            }
-        """
-        )
+        header_widget.setObjectName("headerWidget")
         header_layout = QHBoxLayout(header_widget)
         header_layout.setContentsMargins(24, 16, 24, 16)
 
         # Title with icon
         title_label = QLabel("🎛️ OpenBoard")
         title_label.setFont(QFont("Arial", 22, QFont.Bold))
-        title_label.setStyleSheet(
-            """
-            QLabel {
-                color: white;
-            }
-        """
-        )
+        title_label.setObjectName("titleLabel")
         header_layout.addWidget(title_label)
 
         header_layout.addStretch()
@@ -122,15 +89,7 @@ class MusicBoardMainWindow(QMainWindow):
         volume_layout.setSpacing(12)
 
         master_vol_label = QLabel("Master Volume:")
-        master_vol_label.setStyleSheet(
-            """
-            QLabel {
-                color: white;
-                font-weight: bold;
-                font-size: 14px;
-            }
-        """
-        )
+        master_vol_label.setObjectName("masterVolLabel")
         volume_layout.addWidget(master_vol_label)
 
         self.master_volume_slider = QSlider(Qt.Horizontal)
@@ -140,44 +99,12 @@ class MusicBoardMainWindow(QMainWindow):
         self.master_volume_slider.valueChanged.connect(
             self._on_master_volume_changed
         )
-        self.master_volume_slider.setStyleSheet(
-            """
-            QSlider::groove:horizontal {
-                border: 1px solid #34495e;
-                height: 8px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #95a5a6, stop:1 #7f8c8d);
-                margin: 2px 0;
-                border-radius: 4px;
-            }
-            QSlider::handle:horizontal {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #3498db, stop:1 #2980b9);
-                border: 2px solid white;
-                width: 18px;
-                height: 18px;
-                margin: -6px 0;
-                border-radius: 9px;
-            }
-            QSlider::handle:horizontal:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 #2980b9, stop:1 #21618c);
-            }
-        """
-        )
+        self.master_volume_slider.setObjectName("masterVolumeSlider")
         volume_layout.addWidget(self.master_volume_slider)
 
         self.master_volume_label = QLabel("80%")
         self.master_volume_label.setFixedWidth(40)
-        self.master_volume_label.setStyleSheet(
-            """
-            QLabel {
-                color: white;
-                font-weight: bold;
-                font-size: 14px;
-            }
-        """
-        )
+        self.master_volume_label.setObjectName("masterVolumeValue")
         volume_layout.addWidget(self.master_volume_label)
 
         header_layout.addWidget(volume_container)
@@ -186,27 +113,7 @@ class MusicBoardMainWindow(QMainWindow):
         stop_all_button = QPushButton("⏹ Stop All")
         stop_all_button.setFixedSize(120, 48)
         stop_all_button.clicked.connect(self._stop_all_sounds)
-        stop_all_button.setStyleSheet(
-            """
-            QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                   stop:0 #e74c3c, stop:1 #c0392b);
-                color: white;
-                border: none;
-                border-radius: 24px;
-                font-weight: bold;
-                font-size: 14px;
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                   stop:0 #c0392b, stop:1 #a93226);
-                border: 2px solid #fff;
-            }
-            QPushButton:pressed {
-                background: #a93226;
-            }
-        """
-        )
+        stop_all_button.setObjectName("stopAllButton")
 
         header_layout.addWidget(stop_all_button)
 
