@@ -64,6 +64,10 @@ SoundSection {
     font-weight: bold;
     font-size: 14px;
 }
+#stopAllButton::icon,
+#refreshButton::icon {
+    margin-right: 6px;
+}
 #stopAllButton:hover {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
        stop:0 #c0392b, stop:1 #a93226);
