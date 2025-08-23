@@ -1,4 +1,4 @@
-# Open Board
+# Open Board. Free TTRPG Audio Mixer and Sounboard
 
 ![Python](https://img.shields.io/badge/Python-3.13%2B-blue) 
 ![PySide6](https://img.shields.io/badge/PySide6-6.x-green)
