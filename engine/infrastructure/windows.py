@@ -1,9 +1,8 @@
+from pathlib import Path
 from typing import List
 
-from PySide6.QtCore import (
-    Qt,
-)
-from PySide6.QtGui import QFont
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -16,6 +15,8 @@ from PySide6.QtWidgets import (
 
 from engine.infrastructure.services import QtAudioService
 from engine.infrastructure.widgets import SoundSection
+
+ICON_DIR = Path(__file__).resolve().parent / "icons" / "svgs" / "solid"
 
 
 class MusicBoardMainWindow(QMainWindow):
@@ -30,7 +31,8 @@ class MusicBoardMainWindow(QMainWindow):
     def _setup_ui(self) -> None:
         """Set up the main window UI."""
 
-        self.setWindowTitle("🎛️ OpenBoard - TTRPG Audio Mixer and Soundboard")
+        self.setWindowTitle("OpenBoard - TTRPG Audio Mixer and Soundboard")
+        self.setWindowIcon(QIcon(str(ICON_DIR / "sliders.svg")))
         self.setGeometry(100, 100, 1400, 900)
 
         # Central widget
@@ -50,13 +52,13 @@ class MusicBoardMainWindow(QMainWindow):
 
         # Create the three sections
         ambient_section = SoundSection(
-            "🌿 AMBIENT", "ambient", self.audio_service, loop_mode=True
+            "AMBIENT", "ambient", self.audio_service, loop_mode=True
         )
         music_section = SoundSection(
-            "🎵 MUSIC", "music", self.audio_service, loop_mode=True
+            "MUSIC", "music", self.audio_service, loop_mode=True
         )
         effects_section = SoundSection(
-            "⚡ EFFECTS", "effects", self.audio_service, loop_mode=False
+            "EFFECTS", "effects", self.audio_service, loop_mode=False
         )
 
         self.sections = [ambient_section, music_section, effects_section]
@@ -77,7 +79,10 @@ class MusicBoardMainWindow(QMainWindow):
         header_layout.setContentsMargins(24, 16, 24, 16)
 
         # Title with icon
-        title_label = QLabel("🎛️ OpenBoard")
+        icon = (ICON_DIR / "sliders.svg").as_posix()
+        title_label = QLabel()
+        title_label.setTextFormat(Qt.RichText)
+        title_label.setText(f"<img src='{icon}'/> OpenBoard")
         title_label.setFont(QFont("Arial", 22, QFont.Bold))
         title_label.setObjectName("titleLabel")
         header_layout.addWidget(title_label)
@@ -112,13 +117,15 @@ class MusicBoardMainWindow(QMainWindow):
         header_layout.addWidget(volume_container)
 
         # Refresh and Stop All buttons
-        refresh_button = QPushButton("🔄 Refresh")
+        refresh_button = QPushButton("Refresh")
+        refresh_button.setIcon(QIcon(str(ICON_DIR / "refresh.svg")))
         refresh_button.setFixedSize(120, 48)
         refresh_button.clicked.connect(self._refresh_all_sections)
         refresh_button.setObjectName("refreshButton")
         header_layout.addWidget(refresh_button)
 
-        stop_all_button = QPushButton("⏹ Stop All")
+        stop_all_button = QPushButton("Stop All")
+        stop_all_button.setIcon(QIcon(str(ICON_DIR / "stop.svg")))
         stop_all_button.setFixedSize(120, 48)
         stop_all_button.clicked.connect(self._stop_all_sounds)
         stop_all_button.setObjectName("stopAllButton")

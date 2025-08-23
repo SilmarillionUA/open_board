@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -17,6 +17,8 @@ from PySide6.QtWidgets import (
 
 from engine.application.services import AudioService
 from engine.domain.sound import Sound, SoundFolder
+
+ICON_DIR = Path(__file__).resolve().parent / "icons" / "svgs" / "solid"
 
 
 class SoundPlayer(QWidget):
@@ -63,9 +65,13 @@ class SoundPlayer(QWidget):
         # Sound name with folder indicator
         name_text = self.filename
         if self.is_folder:
-            name_text = f"📁 {self.filename} 🔄"  # Folder icon + repeat icon
+            folder_icon = (ICON_DIR / "folder.svg").as_posix()
+            repeat_icon = (ICON_DIR / "repeat.svg").as_posix()
+            name_text = (f"<img src='{folder_icon}'/> {self.filename} <img src='{repeat_icon}'/>")
 
-        self.name_label = QLabel(name_text)
+        self.name_label = QLabel()
+        self.name_label.setTextFormat(Qt.RichText)
+        self.name_label.setText(name_text)
         self.name_label.setWordWrap(True)
         self.name_label.setObjectName("playerNameLabel")
         top_layout.addWidget(self.name_label, 1)
@@ -78,20 +84,26 @@ class SoundPlayer(QWidget):
         bottom_layout.setSpacing(6)
 
         # Smaller buttons
-        self.play_button = QPushButton("▶")
+        self.play_button = QPushButton()
+        self.play_button.setIcon(QIcon(str(ICON_DIR / "play.svg")))
+        self.play_button.setIconSize(QSize(16, 16))
         self.play_button.setFixedSize(28, 24)
         self.play_button.clicked.connect(self.play)
         self.play_button.setObjectName("playButton")
         bottom_layout.addWidget(self.play_button)
 
-        self.pause_button = QPushButton("⏸")
+        self.pause_button = QPushButton()
+        self.pause_button.setIcon(QIcon(str(ICON_DIR / "pause.svg")))
+        self.pause_button.setIconSize(QSize(16, 16))
         self.pause_button.setFixedSize(28, 24)
         self.pause_button.clicked.connect(self._pause)
         self.pause_button.setObjectName("pauseButton")
         self.pause_button.hide()
         bottom_layout.addWidget(self.pause_button)
 
-        self.stop_button = QPushButton("⏹")
+        self.stop_button = QPushButton()
+        self.stop_button.setIcon(QIcon(str(ICON_DIR / "stop.svg")))
+        self.stop_button.setIconSize(QSize(16, 16))
         self.stop_button.setFixedSize(28, 24)
         self.stop_button.clicked.connect(self.stop)
         self.stop_button.setObjectName("stopButton")
@@ -184,8 +196,17 @@ class SoundSection(QWidget):
         layout.setSpacing(0)
 
         # Section header
-        header = QLabel(self.title)
-        header.setFont(QFont("Arial", 16, QFont.Bold))
+        if 'AMBIENT' in self.title:
+            icon_file = 'leaf.svg'
+        elif 'MUSIC' in self.title:
+            icon_file = 'music.svg'
+        else:
+            icon_file = 'bolt.svg'
+        icon_path = (ICON_DIR / icon_file).as_posix()
+        header = QLabel()
+        header.setTextFormat(Qt.RichText)
+        header.setText(f"<img src='{icon_path}'/> {self.title}")
+        header.setFont(QFont('Arial', 16, QFont.Bold))
         header.setAlignment(Qt.AlignCenter)
         header.setFixedHeight(60)
 
@@ -238,11 +259,13 @@ class SoundSection(QWidget):
         """Load sound files and folders from the folder in alphabetical order."""
         if not os.path.exists(self.folder_path):
             # Show message if folder doesn't exist
+            folder_icon = (ICON_DIR / 'folder.svg').as_posix()
             no_folder_label = QLabel(
-                f"📁 Folder '{self.folder_path}' not found"
+                f"<img src='{folder_icon}'/> Folder '{self.folder_path}' not found",
             )
+            no_folder_label.setTextFormat(Qt.RichText)
             no_folder_label.setAlignment(Qt.AlignCenter)
-            no_folder_label.setObjectName("noFolderLabel")
+            no_folder_label.setObjectName('noFolderLabel')
             self.players_layout.addWidget(no_folder_label)
             return
 
@@ -278,14 +301,23 @@ class SoundSection(QWidget):
 
         if not all_items:
             # Show message if no audio files or folders found
-            if "EFFECTS" in self.title:
-                message = "🎵 No audio files or folders found\nAdd audio files or folders with sounds!"
+            music_icon = (ICON_DIR / 'music.svg').as_posix()
+            if 'EFFECTS' in self.title:
+                message = (
+                    f"<img src='{music_icon}'/> No audio files or folders found"
+                    "<br>Add audio files or folders with sounds!"
+                )
             else:
-                message = "🎵 No audio files found\nDrop some music here!"
+                message = (
+                    f"<img src='{music_icon}'/> No audio files found"
+                    "<br>Drop some music here!"
+                )
 
-            no_files_label = QLabel(message)
+            no_files_label = QLabel()
+            no_files_label.setTextFormat(Qt.RichText)
+            no_files_label.setText(message)
             no_files_label.setAlignment(Qt.AlignCenter)
-            no_files_label.setObjectName("noFilesLabel")
+            no_files_label.setObjectName('noFilesLabel')
             self.players_layout.addWidget(no_files_label)
             return
 
