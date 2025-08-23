@@ -1,9 +1,9 @@
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 from PySide6.QtCore import QSize, Qt, QTimer
-from PySide6.QtGui import QFont, QIcon, QColor, QPainter, QPixmap
+from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -63,6 +63,10 @@ class SoundPlayer(QWidget):
         if self._service:
             self._service.playback_finished.connect(self._on_playback_finished)
         self._fade_timer: Optional[QTimer] = None
+        self._fade_start: float = 0.0
+        self._fade_end: float = 0.0
+        self._fade_elapsed: int = 0
+        self._fade_callback: Optional[Callable[[], None]] = None
 
     def _start_playback(self) -> None:
         """Trigger playback via the audio service."""
@@ -70,33 +74,51 @@ class SoundPlayer(QWidget):
             self._stop_fade()
             self._service.play_sound(self.sound)
             if self.loop_mode:
-                self._service.set_sound_volume(self.sound, 0.0)
-                self._fade_target = self.volume_slider.value() / 100.0
-                self._fade_elapsed = 0
-                self._fade_timer = QTimer(self)
-                self._fade_timer.timeout.connect(self._fade_step)
-                self._fade_timer.start(100)
+                self._start_fade(0.0, self.volume_slider.value() / 100.0)
             else:
                 self._service.set_sound_volume(
                     self.sound, self.volume_slider.value() / 100.0
                 )
+
+    def _start_fade(
+        self,
+        start: float,
+        end: float,
+        callback: Optional[Callable[[], None]] = None,
+    ) -> None:
+        """Start a fade from ``start`` to ``end`` over 3 seconds."""
+
+        if not (self.sound and self._service):
+            return
+        self._stop_fade()
+        self._fade_start = start
+        self._fade_end = end
+        self._fade_elapsed = 0
+        self._fade_callback = callback
+        self._service.set_sound_volume(self.sound, start)
+        self._fade_timer = QTimer(self)
+        self._fade_timer.timeout.connect(self._fade_step)
+        self._fade_timer.start(100)
 
     def _fade_step(self) -> None:
         if not (self.sound and self._service and self._fade_timer):
             return
         self._fade_elapsed += 100
         ratio = min(self._fade_elapsed / 3000, 1.0)
-        self._service.set_sound_volume(
-            self.sound, self._fade_target * ratio
-        )
+        volume = self._fade_start + (self._fade_end - self._fade_start) * ratio
+        self._service.set_sound_volume(self.sound, volume)
         if ratio >= 1.0:
+            callback = self._fade_callback
             self._stop_fade()
+            if callback:
+                callback()
 
     def _stop_fade(self) -> None:
         if self._fade_timer:
             self._fade_timer.stop()
             self._fade_timer.deleteLater()
             self._fade_timer = None
+        self._fade_callback = None
 
     def _setup_ui(self) -> None:
         """Set up the player UI."""
@@ -116,11 +138,15 @@ class SoundPlayer(QWidget):
         if self.is_folder:
             folder_icon = (ICON_DIR / "folder.svg").as_posix()
             repeat_icon = (ICON_DIR / "repeat.svg").as_posix()
-            name_text = (
-                f"<img src='{folder_icon}' width='14' height='14' style='vertical-align: middle;'/> "
-                f"{self.filename} "
-                f"<img src='{repeat_icon}' width='14' height='14' style='vertical-align: middle;'/>"
+            folder_html = (
+                f"<img src='{folder_icon}' width='14' height='14' "
+                "style='vertical-align: middle;'/> "
             )
+            repeat_html = (
+                f"<img src='{repeat_icon}' width='14' height='14' "
+                "style='vertical-align: middle;'/>"
+            )
+            name_text = f"{folder_html}{self.filename} {repeat_html}"
 
         self.name_label = QLabel()
         self.name_label.setTextFormat(Qt.RichText)
@@ -145,7 +171,9 @@ class SoundPlayer(QWidget):
         bottom_layout.addWidget(self.play_button)
 
         self.pause_button = QPushButton()
-        self.pause_button.setIcon(QIcon(colored_svg("pause.svg", "#ffcc00", 14)))
+        self.pause_button.setIcon(
+            QIcon(colored_svg("pause.svg", "#ffcc00", 14))
+        )
         self.pause_button.setIconSize(QSize(14, 14))
         self.pause_button.setFixedSize(20, 20)
         self.pause_button.clicked.connect(self._pause)
@@ -201,11 +229,24 @@ class SoundPlayer(QWidget):
         self.pause_button.show()
 
     def _pause(self) -> None:
-        """Pause playback through the service."""
+        """Pause playback through the service with a 3s fade-out."""
 
         if self.sound and self._service:
-            self._service.pause_sound(self.sound)
-        self._stop_fade()
+            if self._fade_timer:
+                ratio = min(self._fade_elapsed / 3000, 1.0)
+                current = (
+                    self._fade_start
+                    + (self._fade_end - self._fade_start) * ratio
+                )
+            else:
+                current = self.volume_slider.value() / 100.0
+            self._start_fade(
+                current,
+                0.0,
+                lambda s=self.sound: self._service.pause_sound(s),
+            )
+        else:
+            self._stop_fade()
         self.pause_button.hide()
         self.play_button.show()
 
