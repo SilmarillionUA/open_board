@@ -91,55 +91,17 @@ SoundPlayer:hover {
     background-color: transparent;
 }
 
-#playButton {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #4CAF50, stop:1 #45a049);
-    color: white;
+#playButton, #pauseButton, #stopButton {
+    background: transparent;
     border: none;
-    border-radius: 12px;
-    font-weight: bold;
-    font-size: 10px;
+    border-radius: 4px;
+    padding: 0px;
 }
-#playButton:hover {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #45a049, stop:1 #3d8b40);
+#playButton:hover, #pauseButton:hover, #stopButton:hover {
+    background: rgba(0, 0, 0, 0.1);
 }
-#playButton:pressed {
-    background: #3d8b40;
-}
-
-#pauseButton {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #FF9800, stop:1 #F57C00);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-weight: bold;
-    font-size: 10px;
-}
-#pauseButton:hover {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #F57C00, stop:1 #E65100);
-}
-#pauseButton:pressed {
-    background: #E65100;
-}
-
-#stopButton {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #f44336, stop:1 #da190b);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-weight: bold;
-    font-size: 10px;
-}
-#stopButton:hover {
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0 #da190b, stop:1 #c1170a);
-}
-#stopButton:pressed {
-    background: #c1170a;
+#playButton:pressed, #pauseButton:pressed, #stopButton:pressed {
+    background: rgba(0, 0, 0, 0.2);
 }
 
 #volumeTextLabel {
