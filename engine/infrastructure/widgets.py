@@ -1,5 +1,4 @@
 import os
-import random
 from pathlib import Path
 from typing import List, Optional
 
@@ -24,6 +23,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtGui import QFont
 
+from engine.domain.sound import Sound, SoundFolder, VolumeLevel
+
 
 class SoundPlayer(QWidget):
     """Individual sound player widget with play/stop and volume controls."""
@@ -41,18 +42,19 @@ class SoundPlayer(QWidget):
         self.file_path = file_path
         self.loop_mode = loop_mode
         self.is_folder = is_folder
-        self.master_volume = 1.0
+        self.master_volume = VolumeLevel(1.0)
         self._current_fade_volume = 1.0  # For fade animations
 
         if self.is_folder:
             # For folders, store the folder path and load available sounds
-            self.folder_path = file_path
+            self.sound_folder = SoundFolder(Path(file_path))
+            self.sound_folder.scan()
             self.filename = Path(file_path).name
-            self.folder_sounds = self._load_folder_sounds()
             self.current_sound_path = None
         else:
             # For regular files
             self.filename = Path(file_path).stem
+            self.sound = Sound(Path(file_path), loop_mode)
 
         # Audio components
         self.media_player = QMediaPlayer()
@@ -77,31 +79,6 @@ class SoundPlayer(QWidget):
 
         self._setup_ui()
         self._update_volume()
-
-    def _load_folder_sounds(self) -> List[str]:
-        """Load all audio files from the folder."""
-        if not os.path.exists(self.folder_path) or not os.path.isdir(
-            self.folder_path
-        ):
-            return []
-
-        audio_extensions = {'.mp3', '.wav', '.ogg', '.m4a', '.flac', '.aac'}
-        sounds = []
-
-        for file_path in Path(self.folder_path).iterdir():
-            if (
-                file_path.is_file()
-                and file_path.suffix.lower() in audio_extensions
-            ):
-                sounds.append(str(file_path))
-
-        return sounds
-
-    def _get_random_sound(self) -> Optional[str]:
-        """Get a random sound from the folder."""
-        if not self.folder_sounds:
-            return None
-        return random.choice(self.folder_sounds)
 
     @Property(float)
     def fadeVolume(self) -> float:
@@ -305,7 +282,7 @@ class SoundPlayer(QWidget):
 
         # Add folder info if this is a folder
         if self.is_folder:
-            info_label = QLabel(f"({len(self.folder_sounds)} sounds)")
+            info_label = QLabel(f"({len(self.sound_folder.sounds)} sounds)")
             info_label.setStyleSheet(
                 """
                 QLabel {
@@ -333,13 +310,15 @@ class SoundPlayer(QWidget):
         """Start playing the sound with fade in for looping sounds only."""
         if self.is_folder:
             # For folders, select a random sound each time
-            random_sound = self._get_random_sound()
+            random_sound = self.sound_folder.random_sound()
             if random_sound:
-                self.current_sound_path = random_sound
-                self.media_player.setSource(QUrl.fromLocalFile(random_sound))
+                self.current_sound_path = str(random_sound.path)
+                self.media_player.setSource(
+                    QUrl.fromLocalFile(str(random_sound.path))
+                )
                 print(
                     f"Playing random sound from folder '{self.filename}': "
-                    f"{Path(random_sound).stem}"
+                    f"{random_sound.path.stem}"
                 )
             else:
                 print(f"No sounds found in folder '{self.filename}'")
@@ -403,13 +382,13 @@ class SoundPlayer(QWidget):
         """Update the actual audio volume based on slider, master, and fade volume."""
         slider_volume = self.volume_slider.value() / 100.0
         final_volume = (
-            slider_volume * self.master_volume * self._current_fade_volume
+            slider_volume * self.master_volume.value * self._current_fade_volume
         )
         self.audio_output.setVolume(final_volume)
 
     def set_master_volume(self, volume: float) -> None:
         """Set master volume (0.0 to 1.0)."""
-        self.master_volume = volume
+        self.master_volume = VolumeLevel(volume)
         self._update_volume()
 
     def _on_media_status_changed(
