@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -293,7 +293,10 @@ class SoundSection(QWidget):
         for i, item_path in enumerate(all_items):
             is_folder = os.path.isdir(item_path)
             player = SoundPlayer(
-                item_path, self.loop_mode, is_folder=is_folder, service=self._service
+                item_path,
+                self.loop_mode,
+                is_folder=is_folder,
+                service=self._service,
             )
             self.players.append(player)
             self.players_layout.addWidget(player)
@@ -314,3 +317,19 @@ class SoundSection(QWidget):
         """Stop all players in this section."""
         for player in self.players:
             player.stop()
+
+    def refresh(self) -> None:
+        """Reload sounds from the section's folder."""
+        # Stop any currently playing sounds
+        self.stop_all()
+
+        # Remove all existing player widgets and other layout items
+        while self.players_layout.count():
+            item = self.players_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+
+        # Clear current players list and repopulate
+        self.players = []
+        self._load_sounds()
