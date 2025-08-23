@@ -15,13 +15,21 @@ class VolumeLevel:
             raise ValueError("Volume level must be between 0.0 and 1.0")
 
 
-@dataclass
+@dataclass(eq=False)
 class Sound:
     path: Path
     loop: bool = False
 
     def should_loop(self) -> bool:
         return self.loop
+
+    def __hash__(self) -> int:
+        return hash(self.path)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Sound):
+            return NotImplemented
+        return self.path == other.path
 
 
 @dataclass
