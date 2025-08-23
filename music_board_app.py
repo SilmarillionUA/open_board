@@ -1,35 +1,9 @@
-"""
-PySide6 Music Board Application
-A three-section music player for ambient, music, and effects folders.
-"""
-
 import os
 import sys
-import random
-from pathlib import Path
-from typing import List
 
-from PySide6.QtCore import (
-    Qt,
-    QUrl,
-    Signal,
-    QPropertyAnimation,
-    QEasingCurve,
-    Property,
-)
 from PySide6.QtWidgets import (
     QApplication,
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QPushButton,
-    QSlider,
-    QScrollArea,
-    QFrame,
 )
-from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
-from PySide6.QtGui import QFont
 
 from engine.infrastructure.windows import MusicBoardMainWindow
 
@@ -74,7 +48,6 @@ def main() -> int:
 
     app = QApplication(sys.argv)
     app.setApplicationName("OpenBoard Audio Mixer")
-    app.setApplicationVersion("1.0.0")
 
     app.setStyle('Fusion')
 
