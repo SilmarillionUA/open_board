@@ -13,8 +13,8 @@ Open Board is an open-source PySide6 audio mixer and soundboard tailored for tab
 
 1. Create and activate a virtual environment:
    ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows use: .venv\\Scripts\\activate
+   python -m venv venv
+   source venv/bin/activate  # On Windows use: venv\\Scripts\\activate
    ```
 
 2. Install dependencies:

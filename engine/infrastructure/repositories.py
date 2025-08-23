@@ -1,7 +1,3 @@
-from __future__ import annotations
-
-"""Concrete repository implementations using Qt multimedia classes."""
-
 from typing import Dict
 
 from PySide6.QtCore import QUrl
@@ -21,8 +17,6 @@ class QtSoundRepository(SoundRepository):
         self._volumes: Dict[Sound, float] = {}
         self._master_volume: float = 1.0
 
-    # ------------------------------------------------------------------
-    # Internal helpers
     def _ensure_player(self, sound: Sound) -> QMediaPlayer:
         player = self._players.get(sound)
         if player is None:
@@ -59,16 +53,12 @@ class QtSoundRepository(SoundRepository):
         volume = self._volumes.get(sound, 1.0)
         output.setVolume(volume * self._master_volume)
 
-    # ------------------------------------------------------------------
-    # SoundRepository API
-    def play(self, sound: Sound) -> None:  # pragma: no cover - Qt side effects
+    def play(self, sound: Sound) -> None:
         player = self._ensure_player(sound)
         self._apply_volume(sound)
         player.play()
 
-    def pause(
-        self, sound: Sound
-    ) -> None:  # pragma: no cover - Qt side effects
+    def pause(self, sound: Sound) -> None:
         player = self._players.get(sound)
         if player:
             player.pause()

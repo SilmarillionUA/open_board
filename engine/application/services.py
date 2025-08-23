@@ -1,11 +1,7 @@
-"""Application services coordinating sound playback."""
-
-from __future__ import annotations
-
 from PySide6.QtCore import QObject, Signal
 
+from engine.application.repositories import SoundRepository
 from engine.domain.sound import Sound
-from .repositories import SoundRepository
 
 
 class AudioService(QObject):
@@ -22,17 +18,21 @@ class AudioService(QObject):
 
     def play_sound(self, sound: Sound) -> None:
         """Play a sound through the repository."""
+
         self._repo.play(sound)
 
     def pause_sound(self, sound: Sound) -> None:
         """Pause a playing sound."""
+
         self._repo.pause(sound)
 
     def set_master_volume(self, volume: float) -> None:
         """Adjust master output volume."""
+
         self._repo.set_master_volume(volume)
         self.master_volume_changed.emit(volume)
 
     def set_sound_volume(self, sound: Sound, volume: float) -> None:
         """Adjust volume for an individual sound."""
+
         self._repo.set_volume(sound, volume)

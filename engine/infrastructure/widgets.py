@@ -165,7 +165,7 @@ class SoundSection(QWidget):
         folder_path: str,
         service: AudioService,
         loop_mode: bool = False,
-        parent=None,
+        parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
         self.title = title

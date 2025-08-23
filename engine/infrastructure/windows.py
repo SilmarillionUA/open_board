@@ -29,7 +29,8 @@ class MusicBoardMainWindow(QMainWindow):
 
     def _setup_ui(self) -> None:
         """Set up the main window UI."""
-        self.setWindowTitle("🎛️ OpenBoard - TTRPG Audio Mixer")
+
+        self.setWindowTitle("🎛️ OpenBoard - TTRPG Audio Mixer and Soundboard")
         self.setGeometry(100, 100, 1400, 900)
 
         # Central widget
@@ -68,6 +69,7 @@ class MusicBoardMainWindow(QMainWindow):
 
     def _create_header(self, main_layout: QVBoxLayout) -> None:
         """Create the header with master controls."""
+
         header_widget = QWidget()
         header_widget.setFixedHeight(80)
         header_widget.setObjectName("headerWidget")
@@ -126,16 +128,19 @@ class MusicBoardMainWindow(QMainWindow):
 
     def _on_master_volume_changed(self, value: int) -> None:
         """Handle master volume slider changes."""
+
         volume_percent = value / 100.0
         self.master_volume_label.setText(f"{value}%")
         self.audio_service.set_master_volume(volume_percent)
 
     def _stop_all_sounds(self) -> None:
         """Stop all sounds in all sections."""
+
         for section in self.sections:
             section.stop_all()
 
     def _refresh_all_sections(self) -> None:
         """Refresh sound lists for all sections."""
+
         for section in self.sections:
             section.refresh()

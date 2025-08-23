@@ -1,7 +1,3 @@
-"""Repository interfaces for the application layer."""
-
-from __future__ import annotations
-
 from abc import ABCMeta, abstractmethod
 
 from PySide6.QtCore import QObject, Signal

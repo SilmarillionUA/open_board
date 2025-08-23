@@ -1,7 +1,5 @@
-"""Concrete audio services wiring repositories for the GUI layer."""
-
 from engine.application.services import AudioService
-from .repositories import QtSoundRepository
+from engine.infrastructure.repositories import QtSoundRepository
 
 
 class QtAudioService(AudioService):
