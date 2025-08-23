@@ -69,7 +69,7 @@ def create_sample_folders() -> None:
                 )
 
 
-def main():
+def main() -> int:
     """Main application entry point."""
 
     app = QApplication(sys.argv)
