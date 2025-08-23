@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 )
 
 from engine.infrastructure.services import QtAudioService
-from engine.infrastructure.widgets import SoundSection
+from engine.infrastructure.widgets import SoundSection, colored_svg
 
 ICON_DIR = Path(__file__).resolve().parent / "icons" / "svgs" / "solid"
 
@@ -32,7 +32,6 @@ class MusicBoardMainWindow(QMainWindow):
         """Set up the main window UI."""
 
         self.setWindowTitle("OpenBoard - TTRPG Audio Mixer and Soundboard")
-        self.setWindowIcon(QIcon(str(ICON_DIR / "sliders.svg")))
         self.setGeometry(100, 100, 1400, 900)
 
         # Central widget
@@ -78,16 +77,22 @@ class MusicBoardMainWindow(QMainWindow):
         header_layout = QHBoxLayout(header_widget)
         header_layout.setContentsMargins(24, 16, 24, 16)
 
-        # Title with icon
-        icon = (ICON_DIR / "sliders.svg").as_posix()
-        title_label = QLabel()
-        title_label.setTextFormat(Qt.RichText)
-        title_label.setText(
-            f"<img src='{icon}' width='24' height='24'/> OpenBoard"
-        )
+        # Title with colored icon
+        slider_pix = colored_svg("sliders.svg", "#4CAF50", 24)
+        self.setWindowIcon(QIcon(slider_pix))
+        icon_label = QLabel()
+        icon_label.setPixmap(slider_pix)
+        title_label = QLabel("OpenBoard")
         title_label.setFont(QFont("Arial", 22, QFont.Bold))
         title_label.setObjectName("titleLabel")
-        header_layout.addWidget(title_label)
+
+        title_container = QWidget()
+        title_layout = QHBoxLayout(title_container)
+        title_layout.setContentsMargins(0, 0, 0, 0)
+        title_layout.setSpacing(8)
+        title_layout.addWidget(icon_label)
+        title_layout.addWidget(title_label)
+        header_layout.addWidget(title_container)
 
         header_layout.addStretch()
 
@@ -127,7 +132,7 @@ class MusicBoardMainWindow(QMainWindow):
         header_layout.addWidget(refresh_button)
 
         stop_all_button = QPushButton("Stop All")
-        stop_all_button.setIcon(QIcon(str(ICON_DIR / "stop.svg")))
+        stop_all_button.setIcon(QIcon(colored_svg("stop.svg", "#4CAF50", 24)))
         stop_all_button.setFixedSize(120, 48)
         stop_all_button.clicked.connect(self._stop_all_sounds)
         stop_all_button.setObjectName("stopAllButton")
