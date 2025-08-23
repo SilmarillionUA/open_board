@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QFont, QIcon
+from PySide6.QtGui import QFont, QIcon, QColor, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -19,6 +19,16 @@ from engine.application.services import AudioService
 from engine.domain.sound import Sound, SoundFolder
 
 ICON_DIR = Path(__file__).resolve().parent / "icons" / "svgs" / "solid"
+
+
+def colored_svg(name: str, color: str, size: int) -> QPixmap:
+    """Return a tinted pixmap for the given SVG icon."""
+    pixmap = QIcon(str(ICON_DIR / name)).pixmap(size, size)
+    painter = QPainter(pixmap)
+    painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
+    painter.fillRect(pixmap.rect(), QColor(color))
+    painter.end()
+    return pixmap
 
 
 class SoundPlayer(QWidget):
@@ -68,9 +78,9 @@ class SoundPlayer(QWidget):
             folder_icon = (ICON_DIR / "folder.svg").as_posix()
             repeat_icon = (ICON_DIR / "repeat.svg").as_posix()
             name_text = (
-                f"<img src='{folder_icon}' width='14' height='14'/> "
+                f"<img src='{folder_icon}' width='14' height='14' style='vertical-align: middle;'/> "
                 f"{self.filename} "
-                f"<img src='{repeat_icon}' width='14' height='14'/>"
+                f"<img src='{repeat_icon}' width='14' height='14' style='vertical-align: middle;'/>"
             )
 
         self.name_label = QLabel()
@@ -89,26 +99,27 @@ class SoundPlayer(QWidget):
 
         # Smaller buttons
         self.play_button = QPushButton()
-        self.play_button.setIcon(QIcon(str(ICON_DIR / "play.svg")))
-        self.play_button.setIconSize(QSize(14, 14))
-        self.play_button.setFixedSize(24, 24)
+        green = "#4CAF50"
+        self.play_button.setIcon(QIcon(colored_svg("play.svg", green, 18)))
+        self.play_button.setIconSize(QSize(18, 18))
+        self.play_button.setFixedSize(28, 28)
         self.play_button.clicked.connect(self.play)
         self.play_button.setObjectName("playButton")
         bottom_layout.addWidget(self.play_button)
 
         self.pause_button = QPushButton()
-        self.pause_button.setIcon(QIcon(str(ICON_DIR / "pause.svg")))
-        self.pause_button.setIconSize(QSize(14, 14))
-        self.pause_button.setFixedSize(24, 24)
+        self.pause_button.setIcon(QIcon(colored_svg("pause.svg", green, 18)))
+        self.pause_button.setIconSize(QSize(18, 18))
+        self.pause_button.setFixedSize(28, 28)
         self.pause_button.clicked.connect(self._pause)
         self.pause_button.setObjectName("pauseButton")
         self.pause_button.hide()
         bottom_layout.addWidget(self.pause_button)
 
         self.stop_button = QPushButton()
-        self.stop_button.setIcon(QIcon(str(ICON_DIR / "stop.svg")))
-        self.stop_button.setIconSize(QSize(14, 14))
-        self.stop_button.setFixedSize(24, 24)
+        self.stop_button.setIcon(QIcon(colored_svg("stop.svg", green, 18)))
+        self.stop_button.setIconSize(QSize(18, 18))
+        self.stop_button.setFixedSize(28, 28)
         self.stop_button.clicked.connect(self.stop)
         self.stop_button.setObjectName("stopButton")
         bottom_layout.addWidget(self.stop_button)
@@ -199,40 +210,44 @@ class SoundSection(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # Section header
-        if 'AMBIENT' in self.title:
-            icon_file = 'leaf.svg'
-        elif 'MUSIC' in self.title:
-            icon_file = 'music.svg'
-        else:
-            icon_file = 'bolt.svg'
-        icon_path = (ICON_DIR / icon_file).as_posix()
-        header = QLabel()
-        header.setTextFormat(Qt.RichText)
-        header.setText(
-            f"<img src='{icon_path}' width='20' height='20'/> {self.title}"
-        )
-        header.setFont(QFont('Arial', 16, QFont.Bold))
-        header.setAlignment(Qt.AlignCenter)
-        header.setFixedHeight(60)
-
-        # Dynamic header colors based on section type
+        # Section header with colored icon
         if "AMBIENT" in self.title:
+            icon_file = "leaf.svg"
             header_color = "#4CAF50"
         elif "MUSIC" in self.title:
+            icon_file = "music.svg"
             header_color = "#2196F3"
-        else:  # EFFECTS
+        else:
+            icon_file = "bolt.svg"
             header_color = "#FF9800"
+
+        header = QWidget()
+        header.setObjectName("sectionHeader")
+        header.setFixedHeight(60)
+        header_layout = QHBoxLayout(header)
+        header_layout.setContentsMargins(12, 0, 12, 0)
+        header_layout.setSpacing(8)
+        header_layout.setAlignment(Qt.AlignCenter)
+
+        icon_label = QLabel()
+        icon_label.setPixmap(colored_svg(icon_file, header_color, 24))
+        header_layout.addWidget(icon_label)
+
+        text_label = QLabel(self.title)
+        text_label.setFont(QFont("Arial", 16, QFont.Bold))
+        header_layout.addWidget(text_label)
 
         header.setStyleSheet(
             f"""
-            QLabel {{
+            #sectionHeader {{
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 {header_color},
                     stop:1 {self._darken_color(header_color)}
                 );
-                color: white;
                 border-radius: 12px 12px 0 0;
+            }}
+            #sectionHeader QLabel {{
+                color: white;
                 font-size: 16px;
                 font-weight: bold;
             }}
