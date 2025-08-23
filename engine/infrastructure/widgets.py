@@ -76,6 +76,7 @@ class SoundPlayer(QWidget):
                 self._service.set_sound_volume(self.sound, 0.0)
             self._service.play_sound(self.sound)
             if self.loop_mode:
+
                 self._start_fade(0.0, self.volume_slider.value() / 100.0)
             else:
                 self._service.set_sound_volume(
@@ -243,7 +244,7 @@ class SoundPlayer(QWidget):
                 )
             else:
                 current = self.volume_slider.value() / 100.0
-
+            
             def finish(s=self.sound, pos=position) -> None:
                 self._service.pause_sound(s)
                 self._service.set_sound_position(s, pos)
