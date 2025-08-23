@@ -23,6 +23,7 @@ ICON_DIR = Path(__file__).resolve().parent / "icons" / "svgs" / "solid"
 
 def colored_svg(name: str, color: str, size: int) -> QPixmap:
     """Return a tinted pixmap for the given SVG icon."""
+
     pixmap = QIcon(str(ICON_DIR / name)).pixmap(size, size)
     painter = QPainter(pixmap)
     painter.setCompositionMode(QPainter.CompositionMode_SourceIn)
@@ -97,29 +98,27 @@ class SoundPlayer(QWidget):
         bottom_layout.setContentsMargins(0, 0, 0, 0)
         bottom_layout.setSpacing(6)
 
-        # Smaller buttons
         self.play_button = QPushButton()
-        green = "#4CAF50"
-        self.play_button.setIcon(QIcon(colored_svg("play.svg", green, 18)))
-        self.play_button.setIconSize(QSize(18, 18))
-        self.play_button.setFixedSize(28, 28)
+        self.play_button.setIcon(QIcon(colored_svg("play.svg", "#4CAF50", 14)))
+        self.play_button.setIconSize(QSize(14, 14))
+        self.play_button.setFixedSize(20, 20)
         self.play_button.clicked.connect(self.play)
         self.play_button.setObjectName("playButton")
         bottom_layout.addWidget(self.play_button)
 
         self.pause_button = QPushButton()
-        self.pause_button.setIcon(QIcon(colored_svg("pause.svg", green, 18)))
-        self.pause_button.setIconSize(QSize(18, 18))
-        self.pause_button.setFixedSize(28, 28)
+        self.pause_button.setIcon(QIcon(colored_svg("pause.svg", "#ffcc00", 14)))
+        self.pause_button.setIconSize(QSize(14, 14))
+        self.pause_button.setFixedSize(20, 20)
         self.pause_button.clicked.connect(self._pause)
         self.pause_button.setObjectName("pauseButton")
         self.pause_button.hide()
         bottom_layout.addWidget(self.pause_button)
 
         self.stop_button = QPushButton()
-        self.stop_button.setIcon(QIcon(colored_svg("stop.svg", green, 18)))
-        self.stop_button.setIconSize(QSize(18, 18))
-        self.stop_button.setFixedSize(28, 28)
+        self.stop_button.setIcon(QIcon(colored_svg("stop.svg", "#CC0202", 14)))
+        self.stop_button.setIconSize(QSize(14, 14))
+        self.stop_button.setFixedSize(20, 20)
         self.stop_button.clicked.connect(self.stop)
         self.stop_button.setObjectName("stopButton")
         bottom_layout.addWidget(self.stop_button)
@@ -152,6 +151,7 @@ class SoundPlayer(QWidget):
 
     def play(self) -> None:
         """Start playing the sound via the audio service."""
+
         if self.is_folder:
             random_sound = self.sound_folder.random_sound()
             if random_sound is None:
@@ -167,6 +167,7 @@ class SoundPlayer(QWidget):
 
     def _pause(self) -> None:
         """Pause playback through the service."""
+
         if self.sound and self._service:
             self._service.pause_sound(self.sound)
         self.pause_button.hide()
@@ -174,10 +175,12 @@ class SoundPlayer(QWidget):
 
     def stop(self) -> None:
         """Stop playback (alias for pause)."""
+
         self._pause()
 
     def _on_volume_changed(self, value: int) -> None:
         """Handle volume slider changes."""
+        
         self.volume_label.setText(f"{value}%")
         if self.sound and self._service:
             self._service.set_sound_volume(self.sound, value / 100.0)

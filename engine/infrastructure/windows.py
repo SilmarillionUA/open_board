@@ -78,7 +78,7 @@ class MusicBoardMainWindow(QMainWindow):
         header_layout.setContentsMargins(24, 16, 24, 16)
 
         # Title with colored icon
-        slider_pix = colored_svg("sliders.svg", "#4CAF50", 24)
+        slider_pix = colored_svg("sliders.svg", "#fff", 24)
         self.setWindowIcon(QIcon(slider_pix))
         icon_label = QLabel()
         icon_label.setPixmap(slider_pix)
@@ -125,14 +125,14 @@ class MusicBoardMainWindow(QMainWindow):
 
         # Refresh and Stop All buttons
         refresh_button = QPushButton("Refresh")
-        refresh_button.setIcon(QIcon(str(ICON_DIR / "refresh.svg")))
+        refresh_button.setIcon(QIcon(colored_svg("refresh.svg", "#fff", 24)))
         refresh_button.setFixedSize(120, 48)
         refresh_button.clicked.connect(self._refresh_all_sections)
         refresh_button.setObjectName("refreshButton")
         header_layout.addWidget(refresh_button)
 
         stop_all_button = QPushButton("Stop All")
-        stop_all_button.setIcon(QIcon(colored_svg("stop.svg", "#4CAF50", 24)))
+        stop_all_button.setIcon(QIcon(colored_svg("stop.svg", "#fff", 24)))
         stop_all_button.setFixedSize(120, 48)
         stop_all_button.clicked.connect(self._stop_all_sounds)
         stop_all_button.setObjectName("stopAllButton")
