@@ -63,6 +63,11 @@ class QtSoundRepository(SoundRepository):
         if player:
             player.pause()
 
+    def stop(self, sound: Sound) -> None:
+        player = self._players.get(sound)
+        if player:
+            player.stop()
+
     def set_master_volume(self, volume: float) -> None:
         self._master_volume = volume
         for snd in list(self._players.keys()):
@@ -71,3 +76,14 @@ class QtSoundRepository(SoundRepository):
     def set_volume(self, sound: Sound, volume: float) -> None:
         self._volumes[sound] = volume
         self._apply_volume(sound)
+
+    def get_position(self, sound: Sound) -> int:
+        player = self._players.get(sound)
+        if player:
+            return player.position()
+        return 0
+
+    def set_position(self, sound: Sound, position: int) -> None:
+        player = self._players.get(sound)
+        if player:
+            player.setPosition(position)

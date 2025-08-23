@@ -8,8 +8,8 @@ from engine.domain.sound import Sound
 #
 # ``QObject`` classes use a special metaclass provided by PySide6. When
 # combined with ``ABC`` (which uses ``ABCMeta``), Python raises a metaclass
-# conflict. Subclassing both metaclasses resolves the issue and still allows the
-# use of ``@abstractmethod``.
+# conflict. Subclassing both metaclasses resolves the issue and still allows
+# the use of ``@abstractmethod``.
 
 
 class _QObjectABCMeta(type(QObject), ABCMeta):
@@ -33,9 +33,21 @@ class SoundRepository(QObject, metaclass=_QObjectABCMeta):
         """Pause playback for the given sound."""
 
     @abstractmethod
+    def stop(self, sound: Sound) -> None:
+        """Stop playback and reset position for the given sound."""
+
+    @abstractmethod
     def set_master_volume(self, volume: float) -> None:
         """Set the global master volume (0.0 to 1.0)."""
 
     @abstractmethod
     def set_volume(self, sound: Sound, volume: float) -> None:
         """Set volume for a specific sound (0.0 to 1.0)."""
+
+    @abstractmethod
+    def get_position(self, sound: Sound) -> int:
+        """Return current playback position in milliseconds."""
+
+    @abstractmethod
+    def set_position(self, sound: Sound, position: int) -> None:
+        """Seek to ``position`` (in ms) for the given sound."""

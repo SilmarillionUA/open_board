@@ -26,6 +26,11 @@ class AudioService(QObject):
 
         self._repo.pause(sound)
 
+    def stop_sound(self, sound: Sound) -> None:
+        """Stop playback and reset position for a sound."""
+
+        self._repo.stop(sound)
+
     def set_master_volume(self, volume: float) -> None:
         """Adjust master output volume."""
 
@@ -36,3 +41,13 @@ class AudioService(QObject):
         """Adjust volume for an individual sound."""
 
         self._repo.set_volume(sound, volume)
+
+    def get_sound_position(self, sound: Sound) -> int:
+        """Return current playback position for ``sound`` in ms."""
+
+        return self._repo.get_position(sound)
+
+    def set_sound_position(self, sound: Sound, position: int) -> None:
+        """Seek ``sound`` to ``position`` (in ms)."""
+
+        self._repo.set_position(sound, position)

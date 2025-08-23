@@ -72,8 +72,11 @@ class SoundPlayer(QWidget):
         """Trigger playback via the audio service."""
         if self.sound and self._service:
             self._stop_fade()
+            if self.loop_mode:
+                self._service.set_sound_volume(self.sound, 0.0)
             self._service.play_sound(self.sound)
             if self.loop_mode:
+
                 self._start_fade(0.0, self.volume_slider.value() / 100.0)
             else:
                 self._service.set_sound_volume(
@@ -229,9 +232,10 @@ class SoundPlayer(QWidget):
         self.pause_button.show()
 
     def _pause(self) -> None:
-        """Pause playback through the service with a 3s fade-out."""
+        """Fade out and pause, remembering the pressed position."""
 
         if self.sound and self._service:
+            position = self._service.get_sound_position(self.sound)
             if self._fade_timer:
                 ratio = min(self._fade_elapsed / 3000, 1.0)
                 current = (
@@ -240,20 +244,27 @@ class SoundPlayer(QWidget):
                 )
             else:
                 current = self.volume_slider.value() / 100.0
-            self._start_fade(
-                current,
-                0.0,
-                lambda s=self.sound: self._service.pause_sound(s),
-            )
+            
+            def finish(s=self.sound, pos=position) -> None:
+                self._service.pause_sound(s)
+                self._service.set_sound_position(s, pos)
+                self.pause_button.hide()
+                self.play_button.show()
+
+            self._start_fade(current, 0.0, finish)
         else:
             self._stop_fade()
-        self.pause_button.hide()
-        self.play_button.show()
+            self.pause_button.hide()
+            self.play_button.show()
 
     def stop(self) -> None:
-        """Stop playback (alias for pause)."""
+        """Stop playback immediately and reset position."""
 
-        self._pause()
+        self._stop_fade()
+        if self.sound and self._service:
+            self._service.stop_sound(self.sound)
+        self.pause_button.hide()
+        self.play_button.show()
 
     def _on_volume_changed(self, value: int) -> None:
         """Handle volume slider changes."""
