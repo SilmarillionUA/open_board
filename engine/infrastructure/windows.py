@@ -82,7 +82,9 @@ class MusicBoardMainWindow(QMainWindow):
         icon = (ICON_DIR / "sliders.svg").as_posix()
         title_label = QLabel()
         title_label.setTextFormat(Qt.RichText)
-        title_label.setText(f"<img src='{icon}'/> OpenBoard")
+        title_label.setText(
+            f"<img src='{icon}' width='24' height='24'/> OpenBoard"
+        )
         title_label.setFont(QFont("Arial", 22, QFont.Bold))
         title_label.setObjectName("titleLabel")
         header_layout.addWidget(title_label)

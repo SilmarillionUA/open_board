@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QFont, QIcon
 from PySide6.QtWidgets import (
     QFrame,
@@ -67,7 +67,11 @@ class SoundPlayer(QWidget):
         if self.is_folder:
             folder_icon = (ICON_DIR / "folder.svg").as_posix()
             repeat_icon = (ICON_DIR / "repeat.svg").as_posix()
-            name_text = (f"<img src='{folder_icon}'/> {self.filename} <img src='{repeat_icon}'/>")
+            name_text = (
+                f"<img src='{folder_icon}' width='14' height='14'/> "
+                f"{self.filename} "
+                f"<img src='{repeat_icon}' width='14' height='14'/>"
+            )
 
         self.name_label = QLabel()
         self.name_label.setTextFormat(Qt.RichText)
@@ -86,16 +90,16 @@ class SoundPlayer(QWidget):
         # Smaller buttons
         self.play_button = QPushButton()
         self.play_button.setIcon(QIcon(str(ICON_DIR / "play.svg")))
-        self.play_button.setIconSize(QSize(16, 16))
-        self.play_button.setFixedSize(28, 24)
+        self.play_button.setIconSize(QSize(14, 14))
+        self.play_button.setFixedSize(24, 24)
         self.play_button.clicked.connect(self.play)
         self.play_button.setObjectName("playButton")
         bottom_layout.addWidget(self.play_button)
 
         self.pause_button = QPushButton()
         self.pause_button.setIcon(QIcon(str(ICON_DIR / "pause.svg")))
-        self.pause_button.setIconSize(QSize(16, 16))
-        self.pause_button.setFixedSize(28, 24)
+        self.pause_button.setIconSize(QSize(14, 14))
+        self.pause_button.setFixedSize(24, 24)
         self.pause_button.clicked.connect(self._pause)
         self.pause_button.setObjectName("pauseButton")
         self.pause_button.hide()
@@ -103,8 +107,8 @@ class SoundPlayer(QWidget):
 
         self.stop_button = QPushButton()
         self.stop_button.setIcon(QIcon(str(ICON_DIR / "stop.svg")))
-        self.stop_button.setIconSize(QSize(16, 16))
-        self.stop_button.setFixedSize(28, 24)
+        self.stop_button.setIconSize(QSize(14, 14))
+        self.stop_button.setFixedSize(24, 24)
         self.stop_button.clicked.connect(self.stop)
         self.stop_button.setObjectName("stopButton")
         bottom_layout.addWidget(self.stop_button)
@@ -205,7 +209,9 @@ class SoundSection(QWidget):
         icon_path = (ICON_DIR / icon_file).as_posix()
         header = QLabel()
         header.setTextFormat(Qt.RichText)
-        header.setText(f"<img src='{icon_path}'/> {self.title}")
+        header.setText(
+            f"<img src='{icon_path}' width='20' height='20'/> {self.title}"
+        )
         header.setFont(QFont('Arial', 16, QFont.Bold))
         header.setAlignment(Qt.AlignCenter)
         header.setFixedHeight(60)
@@ -221,8 +227,10 @@ class SoundSection(QWidget):
         header.setStyleSheet(
             f"""
             QLabel {{
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                    stop:0 {header_color}, stop:1 {self._darken_color(header_color)});
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 {header_color},
+                    stop:1 {self._darken_color(header_color)}
+                );
                 color: white;
                 border-radius: 12px 12px 0 0;
                 font-size: 16px;
@@ -251,17 +259,22 @@ class SoundSection(QWidget):
     def _darken_color(self, hex_color: str) -> str:
         """Darken a hex color by 20%."""
         hex_color = hex_color.lstrip('#')
-        rgb = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+        rgb = tuple(
+            int(hex_color[j : j + 2], 16) for j in (0, 2, 4)  # noqa: E203
+        )
         darkened = tuple(int(c * 0.8) for c in rgb)
         return f"#{darkened[0]:02x}{darkened[1]:02x}{darkened[2]:02x}"
 
     def _load_sounds(self) -> None:
-        """Load sound files and folders from the folder in alphabetical order."""
+        """Load sounds from the folder in alphabetical order."""
         if not os.path.exists(self.folder_path):
             # Show message if folder doesn't exist
             folder_icon = (ICON_DIR / 'folder.svg').as_posix()
             no_folder_label = QLabel(
-                f"<img src='{folder_icon}'/> Folder '{self.folder_path}' not found",
+                (
+                    f"<img src='{folder_icon}' width='16' height='16'/> "
+                    f"Folder '{self.folder_path}' not found"
+                ),
             )
             no_folder_label.setTextFormat(Qt.RichText)
             no_folder_label.setAlignment(Qt.AlignCenter)
@@ -304,12 +317,14 @@ class SoundSection(QWidget):
             music_icon = (ICON_DIR / 'music.svg').as_posix()
             if 'EFFECTS' in self.title:
                 message = (
-                    f"<img src='{music_icon}'/> No audio files or folders found"
+                    f"<img src='{music_icon}' width='16' height='16'/> "
+                    "No audio files or folders found"
                     "<br>Add audio files or folders with sounds!"
                 )
             else:
                 message = (
-                    f"<img src='{music_icon}'/> No audio files found"
+                    f"<img src='{music_icon}' width='16' height='16'/> "
+                    "No audio files found"
                     "<br>Drop some music here!"
                 )
 
