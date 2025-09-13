@@ -68,7 +68,6 @@ class SoundPlayer(QWidget):
         *,
         is_stream: bool = False,
         display_name: Optional[str] = None,
-        stream_resolved: bool = True,
     ) -> None:
         super().__init__(parent)
         self.file_path = file_path
@@ -103,16 +102,14 @@ class SoundPlayer(QWidget):
     def _start_playback(self) -> None:
         """Trigger playback via the audio service."""
         if self.sound and self._service:
-            if self.is_stream and not self._stream_resolved:
+            if self.is_stream:
                 try:
                     new_url, new_title = resolve_youtube(self.file_path)
                 except Exception:
                     return
-                self.file_path = new_url
                 self.filename = new_title
                 self.name_label.setText(self.filename)
                 self.sound = Sound(new_url, self.loop_mode)
-                self._stream_resolved = True
             self._stop_fade()
             if self.loop_mode:
                 self._service.set_sound_volume(self.sound, 0.0)
@@ -497,12 +494,12 @@ class SoundSection(QWidget):
                 for row in reader:
                     url = row.get("url")
                     if url:
+                        title = url
                         try:
-                            yt_url, yt_title = self._resolve_youtube(url)
-                            resolved = True
+                            _, title = self._resolve_youtube(url)
                         except Exception:
-                            yt_url, yt_title, resolved = url, url, False
-                        youtube_links.append((yt_url, yt_title, resolved))
+                            pass
+                        youtube_links.append((url, title))
 
         if not all_items and not youtube_links:
             # Show message if no audio files or folders found
@@ -549,14 +546,13 @@ class SoundSection(QWidget):
                 self.players_layout.addWidget(divider)
 
         # Create players for YouTube links
-        for j, (url, title, resolved) in enumerate(youtube_links):
+        for j, (url, title) in enumerate(youtube_links):
             player = SoundPlayer(
                 url,
                 self.loop_mode,
                 service=self._service,
                 is_stream=True,
                 display_name=title,
-                stream_resolved=resolved,
             )
             self.players.append(player)
             self.players_layout.addWidget(player)

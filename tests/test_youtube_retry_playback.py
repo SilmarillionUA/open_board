@@ -49,22 +49,32 @@ def _ensure_app() -> QApplication:
     return app
 
 
-def test_unresolved_link_resolves_on_play(monkeypatch):
+def test_youtube_link_resolves_on_each_play(monkeypatch):
     _ensure_app()
     repo = DummyRepo()
     service = AudioService(repo)
 
+    calls = []
+
+    def fake_resolve(url):
+        calls.append(url)
+        return (f"http://stream{len(calls)}", f"title{len(calls)}")
+
     monkeypatch.setattr(
-        'engine.infrastructure.widgets.resolve_youtube',
-        lambda url: ('http://stream', 'title'),
+        'engine.infrastructure.widgets.resolve_youtube', fake_resolve,
     )
 
     player = SoundPlayer(
         'https://youtube.com/watch?v=dummy',
         service=service,
         is_stream=True,
-        stream_resolved=False,
     )
 
     player._start_playback()
-    assert repo.played == 'http://stream'
+    assert repo.played == 'http://stream1'
+    player._start_playback()
+    assert repo.played == 'http://stream2'
+    assert calls == [
+        'https://youtube.com/watch?v=dummy',
+        'https://youtube.com/watch?v=dummy',
+    ]
