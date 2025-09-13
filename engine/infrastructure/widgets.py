@@ -62,23 +62,45 @@ def _normalize_youtube_url(url: str) -> str:
 
 def resolve_youtube(url: str) -> tuple[str, str]:
     """Return direct audio stream URL and title for a YouTube link."""
-    from pytube import YouTube
+    from functools import partial
+    from pytube import YouTube, innertube
 
     url = _normalize_youtube_url(url)
-    yt = YouTube(url)
-    stream = (
-        yt.streams.filter(only_audio=True, mime_type="audio/mp4")
-        .order_by("abr")
-        .desc()
-        .first()
-    )
-    if stream is None:
-        stream = (
-            yt.streams.filter(only_audio=True).order_by("abr").desc().first()
-        )
-    if stream is None:
-        raise ValueError("No audio stream found")
-    return stream.url, yt.title
+
+    # Some YouTube Music links fail for the default ``ANDROID_MUSIC`` client.
+    # Retry with a broader set of clients so that restricted videos still
+    # resolve. ``INNER_CLIENTS`` order mirrors pytube's preferred clients.
+    inner_clients = ["ANDROID_MUSIC", "ANDROID", "WEB"]
+    last_exc: Exception | None = None
+
+    for client in inner_clients:
+        original_inner = innertube.InnerTube
+        try:
+            innertube.InnerTube = partial(innertube.InnerTube, client=client)
+            yt = YouTube(url)
+            stream = (
+                yt.streams.filter(only_audio=True, mime_type="audio/mp4")
+                .order_by("abr")
+                .desc()
+                .first()
+            )
+            if stream is None:
+                stream = (
+                    yt.streams.filter(only_audio=True)
+                    .order_by("abr")
+                    .desc()
+                    .first()
+                )
+            if stream is not None:
+                return stream.url, yt.title
+        except Exception as exc:  # pragma: no cover - network errors
+            last_exc = exc
+        finally:
+            innertube.InnerTube = original_inner
+
+    if last_exc:
+        raise last_exc
+    raise ValueError("No audio stream found")
 
 
 class SoundPlayer(QWidget):
