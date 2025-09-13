@@ -545,8 +545,16 @@ class SoundSection(QWidget):
 
         yt = YouTube(url)
         stream = (
-            yt.streams.filter(only_audio=True).order_by("abr").desc().first()
+            yt.streams
+            .filter(only_audio=True, mime_type="audio/mp4")
+            .order_by("abr")
+            .desc()
+            .first()
         )
+        if stream is None:
+            stream = (
+                yt.streams.filter(only_audio=True).order_by("abr").desc().first()
+            )
         if stream is None:
             raise ValueError("No audio stream found")
         return stream.url, yt.title
