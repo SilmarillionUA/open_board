@@ -28,7 +28,7 @@ class QtSoundRepository(SoundRepository):
             if isinstance(sound.path, Path) and sound.path.exists():
                 source = QUrl.fromLocalFile(str(sound.path))
             else:
-                source = QUrl(str(sound.path))
+                source = QUrl.fromEncoded(str(sound.path).encode())
             player.setSource(source)
             self._players[sound] = player
             self._outputs[sound] = audio_output
