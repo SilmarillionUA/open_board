@@ -37,3 +37,12 @@ def test_sound_looping_flag(tmp_path):
     assert sound.should_loop()
     sound.loop = False
     assert not sound.should_loop()
+
+
+def test_sound_with_url():
+    url1 = "https://example.com/audio.mp3"
+    url2 = "https://example.com/audio.mp3"
+    s1 = Sound(url1)
+    s2 = Sound(url2)
+    assert s1 == s2
+    assert hash(s1) == hash(s2)

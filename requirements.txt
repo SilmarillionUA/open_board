@@ -9,3 +9,5 @@ pyright==1.1.403
 flake8==7.3.0
 isort==6.0.1
 black==25.1.0
+
+pytube==15.0.0
