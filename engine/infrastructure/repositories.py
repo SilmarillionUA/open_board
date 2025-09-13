@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Dict
 
 from PySide6.QtCore import QUrl
@@ -23,7 +24,12 @@ class QtSoundRepository(SoundRepository):
             player = QMediaPlayer()
             audio_output = QAudioOutput()
             player.setAudioOutput(audio_output)
-            player.setSource(QUrl.fromLocalFile(str(sound.path)))
+            source: QUrl
+            if isinstance(sound.path, Path) and sound.path.exists():
+                source = QUrl.fromLocalFile(str(sound.path))
+            else:
+                source = QUrl(str(sound.path))
+            player.setSource(source)
             self._players[sound] = player
             self._outputs[sound] = audio_output
             self._volumes.setdefault(sound, 1.0)
