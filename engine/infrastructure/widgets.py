@@ -468,9 +468,9 @@ class SoundSection(QWidget):
                     if url:
                         try:
                             yt_url, yt_title = self._resolve_youtube(url)
-                            youtube_links.append((yt_url, yt_title))
                         except Exception:
-                            continue
+                            yt_url, yt_title = url, url
+                        youtube_links.append((yt_url, yt_title))
 
         if not all_items and not youtube_links:
             # Show message if no audio files or folders found
