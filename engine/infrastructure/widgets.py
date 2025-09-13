@@ -1,12 +1,16 @@
 import os
+import csv
+import shutil
 from pathlib import Path
 from typing import Callable, List, Optional
 
 from PySide6.QtCore import QSize, Qt, QTimer
 from PySide6.QtGui import QColor, QFont, QIcon, QPainter, QPixmap
 from PySide6.QtWidgets import (
+    QFileDialog,
     QFrame,
     QHBoxLayout,
+    QInputDialog,
     QLabel,
     QPushButton,
     QScrollArea,
@@ -42,11 +46,15 @@ class SoundPlayer(QWidget):
         is_folder: bool = False,
         service: Optional[AudioService] = None,
         parent: Optional[QWidget] = None,
+        *,
+        is_stream: bool = False,
+        display_name: Optional[str] = None,
     ) -> None:
         super().__init__(parent)
         self.file_path = file_path
         self.loop_mode = loop_mode
         self.is_folder = is_folder
+        self.is_stream = is_stream
         self._service = service
 
         if self.is_folder:
@@ -54,6 +62,9 @@ class SoundPlayer(QWidget):
             self.sound_folder.scan()
             self.filename = Path(file_path).name
             self.sound: Optional[Sound] = None
+        elif self.is_stream:
+            self.sound = Sound(file_path, loop_mode)
+            self.filename = display_name or file_path
         else:
             self.sound = Sound(Path(file_path), loop_mode)
             self.filename = self.sound.path.stem
@@ -369,6 +380,27 @@ class SoundSection(QWidget):
         scroll_area.setWidget(self.players_widget)
         layout.addWidget(scroll_area)
 
+        # Bottom buttons for adding sounds
+        button_row = QWidget()
+        button_layout = QHBoxLayout(button_row)
+        button_layout.setContentsMargins(8, 4, 8, 4)
+        button_layout.setSpacing(6)
+
+        add_file_btn = QPushButton("Add Local")
+        add_file_btn.setFixedSize(100, 24)
+        add_file_btn.clicked.connect(self._add_local_file)
+        add_file_btn.setObjectName("addLocalButton")
+        button_layout.addWidget(add_file_btn)
+
+        add_link_btn = QPushButton("Add YouTube")
+        add_link_btn.setFixedSize(100, 24)
+        add_link_btn.clicked.connect(self._add_youtube_link)
+        add_link_btn.setObjectName("addYoutubeButton")
+        button_layout.addWidget(add_link_btn)
+
+        button_layout.addStretch()
+        layout.addWidget(button_row)
+
     def _darken_color(self, hex_color: str) -> str:
         """Darken a hex color by 20%."""
         hex_color = hex_color.lstrip('#')
@@ -425,7 +457,22 @@ class SoundSection(QWidget):
         # Combine folders first, then files (so folders appear at the top)
         all_items = sound_folders + audio_files
 
-        if not all_items:
+        # Load any YouTube links from csv
+        youtube_links = []
+        csv_path = Path(self.folder_path) / "youtube_links.csv"
+        if csv_path.exists():
+            with csv_path.open("r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    url = row.get("url")
+                    if url:
+                        try:
+                            yt_url, yt_title = self._resolve_youtube(url)
+                            youtube_links.append((yt_url, yt_title))
+                        except Exception:
+                            continue
+
+        if not all_items and not youtube_links:
             # Show message if no audio files or folders found
             music_icon = (ICON_DIR / 'music.svg').as_posix()
             if 'EFFECTS' in self.title:
@@ -449,7 +496,7 @@ class SoundSection(QWidget):
             self.players_layout.addWidget(no_files_label)
             return
 
-        # Create players for each item in alphabetical order
+        # Create players for local items
         for i, item_path in enumerate(all_items):
             is_folder = os.path.isdir(item_path)
             player = SoundPlayer(
@@ -461,8 +508,27 @@ class SoundSection(QWidget):
             self.players.append(player)
             self.players_layout.addWidget(player)
 
-            # Add divider after each player except the last one
-            if i < len(all_items) - 1:
+            if i < len(all_items) - 1 or youtube_links:
+                divider = QFrame()
+                divider.setFrameShape(QFrame.HLine)
+                divider.setFrameShadow(QFrame.Sunken)
+                divider.setFixedHeight(1)
+                divider.setObjectName("dividerFrame")
+                self.players_layout.addWidget(divider)
+
+        # Create players for YouTube links
+        for j, (url, title) in enumerate(youtube_links):
+            player = SoundPlayer(
+                url,
+                self.loop_mode,
+                service=self._service,
+                is_stream=True,
+                display_name=title,
+            )
+            self.players.append(player)
+            self.players_layout.addWidget(player)
+
+            if j < len(youtube_links) - 1:
                 divider = QFrame()
                 divider.setFrameShape(QFrame.HLine)
                 divider.setFrameShadow(QFrame.Sunken)
@@ -472,6 +538,47 @@ class SoundSection(QWidget):
 
         # Add stretch to push players to the top
         self.players_layout.addStretch()
+
+    def _resolve_youtube(self, url: str) -> tuple[str, str]:
+        """Return direct audio stream URL and title for a YouTube link."""
+        from pytube import YouTube
+
+        yt = YouTube(url)
+        stream = (
+            yt.streams.filter(only_audio=True).order_by("abr").desc().first()
+        )
+        if stream is None:
+            raise ValueError("No audio stream found")
+        return stream.url, yt.title
+
+    def _add_local_file(self) -> None:
+        """Open a file dialog and copy selected file into section folder."""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Audio File",
+            "",
+            "Audio Files (*.mp3 *.wav *.ogg *.m4a *.flac *.aac)",
+        )
+        if file_path:
+            dest = Path(self.folder_path) / Path(file_path).name
+            try:
+                shutil.copy(file_path, dest)
+            except Exception:
+                return
+            self.refresh()
+
+    def _add_youtube_link(self) -> None:
+        """Prompt for a YouTube link and store it in the local CSV."""
+        link, ok = QInputDialog.getText(self, "Add YouTube Link", "URL:")
+        if ok and link:
+            csv_path = Path(self.folder_path) / "youtube_links.csv"
+            new_file = not csv_path.exists()
+            with csv_path.open("a", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                if new_file:
+                    writer.writerow(["url"])
+                writer.writerow([link])
+            self.refresh()
 
     def stop_all(self) -> None:
         """Stop all players in this section."""

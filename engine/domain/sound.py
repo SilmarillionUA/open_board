@@ -1,7 +1,7 @@
 import random
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".ogg", ".m4a", ".flac", ".aac"}
 
@@ -17,19 +17,19 @@ class VolumeLevel:
 
 @dataclass(eq=False)
 class Sound:
-    path: Path
+    path: Union[Path, str]
     loop: bool = False
 
     def should_loop(self) -> bool:
         return self.loop
 
     def __hash__(self) -> int:
-        return hash(self.path)
+        return hash(str(self.path))
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Sound):
             return NotImplemented
-        return self.path == other.path
+        return str(self.path) == str(other.path)
 
 
 @dataclass
