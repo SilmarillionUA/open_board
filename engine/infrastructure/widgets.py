@@ -36,20 +36,46 @@ def colored_svg(name: str, color: str, size: int) -> QPixmap:
     return pixmap
 
 
+def _normalize_youtube_url(url: str) -> str:
+    """Normalize various YouTube URL forms to ``www.youtube.com/watch``."""
+    from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
+
+    parsed = urlparse(url)
+    netloc = parsed.netloc
+    path = parsed.path
+    query = parsed.query
+
+    if netloc.startswith("music.youtube") or netloc.startswith("m.youtube"):
+        netloc = "www.youtube.com"
+
+    if netloc == "youtu.be":
+        video_id = path.lstrip("/")
+        params = dict(parse_qsl(query))
+        params.setdefault("v", video_id)
+        netloc = "www.youtube.com"
+        path = "/watch"
+        query = urlencode(params)
+
+    parsed = parsed._replace(netloc=netloc, path=path, query=query)
+    return urlunparse(parsed)
+
+
 def resolve_youtube(url: str) -> tuple[str, str]:
     """Return direct audio stream URL and title for a YouTube link."""
     from pytube import YouTube
 
+    url = _normalize_youtube_url(url)
     yt = YouTube(url)
     stream = (
-        yt.streams
-        .filter(only_audio=True, mime_type="audio/mp4")
+        yt.streams.filter(only_audio=True, mime_type="audio/mp4")
         .order_by("abr")
         .desc()
         .first()
     )
     if stream is None:
-        stream = yt.streams.filter(only_audio=True).order_by("abr").desc().first()
+        stream = (
+            yt.streams.filter(only_audio=True).order_by("abr").desc().first()
+        )
     if stream is None:
         raise ValueError("No audio stream found")
     return stream.url, yt.title
@@ -282,7 +308,7 @@ class SoundPlayer(QWidget):
                 )
             else:
                 current = self.volume_slider.value() / 100.0
-            
+
             def finish(s=self.sound, pos=position) -> None:
                 self._service.pause_sound(s)
                 self._service.set_sound_position(s, pos)
