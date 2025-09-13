@@ -75,6 +75,7 @@ class SoundPlayer(QWidget):
         self.is_folder = is_folder
         self.is_stream = is_stream
         self._service = service
+        self._stream_resolved = stream_resolved
 
         if self.is_folder:
             self.sound_folder = SoundFolder(Path(file_path))
